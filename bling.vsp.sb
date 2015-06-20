@@ -3,7 +3,7 @@
 //	BLE Master (Smart Phone) <-> BLE Slave BL600 UART <-> uC (Bling)
 //      
 //  @file
-//      bling.sb
+//      bling.vsp.sb
 //  @copyright
 //      Peter Schmid, Switzerland
 //  @author
@@ -12,40 +12,11 @@
 //      2014-05-14
 //  @remark     
 //      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
-//   	Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+//   	Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+//                upass.vsp.sb
 //  @version
-//       $Id: bling.vsp.sb,v 1.1 2014/08/26 18:14:44 psi Exp psi $ 
+//      2.1 
 ////////////////////////////////////////////////////////////////////////////////
-'//******************************************************************************
-'// Laird Technologies (c) 2013
-'//
-'// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'// +++++                                                                      ++
-'// +++++  When UwTerminal downloads the app it will store it as a filenname   ++
-'// +++++  which consists of all characters up to the first . and excluding it ++
-'// +++++                                                                      ++
-'// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'//
-'// Virtual Serial Port "External" Loopback app
-'// Instructions:
-'// - Run the app by entering the app name "upass<cr>"
-'// - The module will start advertising a serial port service. 
-'// - if you rename this application as "$autorun$" , it will run automatical after every power cycle or reset providing the autorun jumper is set
-'// - Connect to the devkit and start sending data. If you bridge TX&RX, CTS&RTS on the dev board, any data received are looped back by
-'//   this app i.e. all data received are sent back to the central unit.
-'//
-'// Further commands are available - see comments in the cli.uloop.vsp.sblib file.
-'//
-'// Detailed instruction for using this app can be found in the application note CONN-QSG-BL600-DVK_vSP.pdf 
-'//
-'//
-'//   ####################################
-'//   #                                  #
-'//   #  Search for TODO to make changes #
-'//   #                                  #
-'//   ####################################
-'//
-'//******************************************************************************
 
 '//******************************************************************************
 '// Definitions
@@ -62,11 +33,11 @@
 #define DEVICENAME                           "eWheel"
 #define DEVICENAME_WRITABLE                  1
 #define APPEARANCE                           BLE_APPEARANCE_GENERIC_TAG
-#define MANF_NAME                            "Laird Technologies"
-#define MODELSTR                             "BL600"
+#define MANF_NAME                            "spyr"
+#define MODELSTR                             "Velo Bling-Bling"
 #define SERIALNUM                            "12345"
-#define HWREV                                "1.1"
-#define SWREV                                "1.1"
+#define HWREV                                "1.4"
+#define SWREV                                "2.1"
 
 //-------------------------------------------
 //TODO - Uncomment one of the following three lines
@@ -90,43 +61,51 @@
 #define CHAR_CR                              13
 
 
-        '// Minimum acceptable connection interval (7.5ms)
+// Minimum acceptable connection interval (7.5ms)
 #define MIN_CONN_INTERVAL                    7500
-        '// Maximum acceptable connection interval (1 second).
+
+// Maximum acceptable connection interval (1 second).
 #define MAX_CONN_INTERVAL                    1000000
-//#define MAX_CONN_INTERVAL                    100000
-        '// Slave latency -- number of conn events that can be missed
-        '// Effective Conn interval will be (SLAVE_LATENCY+1)*ACTUAL_CONN_INTERVAL
+
+// Slave latency -- number of conn events that can be missed
+// Effective Conn interval will be (SLAVE_LATENCY+1)*ACTUAL_CONN_INTERVAL
 #define SLAVE_LATENCY                        0
-        '// Connection supervisory timeout (4 seconds) - max 32 seconds
+
+// Connection supervisory timeout (4 seconds) - max 32 seconds
 //#define CONN_SUP_TIMEOUT                     500000 
 #define CONN_SUP_TIMEOUT                     10000000 
-        '//DiscoverableMode, set to BLE_DISCOVERABILITY_xxx
+
+// DiscoverableMode, set to BLE_DISCOVERABILITY_xxx
 #define DISCOVERY_MODE                       BLE_DISCOVERABILITY_GENERAL
+
 #define MAX_DEVNAME_CHRS                     10
-        '//Set Appearance advertise 0 to suppress
+
+// Set Appearance advertise 0 to suppress
 #define ADV_APPEARANCE                       0
-        '//Advertise interval
+
+// Advertise interval
 #define ADV_INTERVAL_MS                      1000
-        '//Advertise timeout
+
+// Advertise timeout
 #define ADV_TIMEOUT_MS                       0
 
-        '//Whitelist Policy in Adverts
+// Whitelist Policy in Adverts
 #define ADV_WHITELIST_FILTER_POLICY          ADV_FILTERPOLICY_BOTH
 
-        '//Minimum long term key size in octets
+// Minimum long term key size in octets
 #define MIN_LTK_SIZE                         8
-        '//Maximum long term key size in octets
+
+// Maximum long term key size in octets
 #define MAX_LTK_SIZE                         16
 
-        '// Set this to non-zero to enable notiy on batt service
+// Set this to non-zero to enable notiy on batt service
 #define BATT_NOTIFY                          0
 #define BATT_INIT_LEVEL_PERC                 100
 
-        '//This sets the pairing i/p capability using bonding
+// This sets the pairing i/p capability using bonding
 #define PAIRING_IOCAPABILITY                 BLE_IOCAPABILITY_NONE
 
-        '//Connection Update Negotiation paramters
+// Connection Update Negotiation paramters
 #define FIRST_CONN_PARAMS_UPDATE_DELAY       5000
 #define NEXT_CONN_PARAMS_UPDATE_DELAY        5000
 #define MAX_CONN_PARAMS_UPDATE_DELAY         15000
@@ -138,7 +117,7 @@
 '//******************************************************************************
 '// Library Import
 '//******************************************************************************
-#include "lib\cli2.upass.vsp.sblib"
+#include "lib\vsp.csc.sblib"
 
 '//******************************************************************************
 '// Debugging resource after libs
