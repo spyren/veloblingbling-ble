@@ -1,0 +1,363 @@
+//  @brief
+//      Create Cycling Speed and Cadence Service
+//      
+//  @file
+//      custom.cycling.speed.cadence.service.slib
+//  @copyright
+//      Peter Schmid, Switzerland
+//  @author
+//      Peter Schmid, peter@spyr.ch
+//  @date
+//      2015-06-16
+//  @remark     
+//      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
+//   	Example : custom.heart.rate.service.slib 
+//  @version
+//      1.1
+////////////////////////////////////////////////////////////////////////////////
+
+
+'//******************************************************************************
+'// Definitions
+'//******************************************************************************
+
+#define MAX_CSC_LEN                        20
+
+'//******************************************************************************
+'// Library Import
+'//******************************************************************************
+
+'//******************************************************************************
+'// Global Variable Declarations
+'//******************************************************************************
+
+dim shCsc as integer        // Service handle
+dim chCscMeas as integer    // Cycling Speed and Cadence Measurement Characteristic Handle
+dim chCscLoc as integer     // Cycling Speed and Cadence Sensor Location Handle
+dim chCscFeat as integer    // Cycling Speed and Cadence Feature Handle
+
+dim wheelRevo               // cumulative wheel revolutions (unitless)
+dim wheelTime		    // last wheel event time (1/1024 s)
+dim sensLoc                 // wheel sensor location
+dim sensCntct               // wheel sensor contact status on/off
+dim csc$ as string          // csc measurement attribute
+
+dim startTick
+
+
+'//******************************************************************************
+'// Initialisse Global Variable
+'//******************************************************************************
+
+wheelRevo       = 0
+wheelTime       = 0
+sensLoc         = 4         // frontwheel
+sensCntct       = 1
+
+'//******************************************************************************
+'// Function and Subroutine definitions
+'//******************************************************************************
+
+'//******************************************************************************
+'// Register Error Handler as early as possible
+'//******************************************************************************
+
+
+'//==============================================================================
+'// data to encode is in wheelRevo, wheelTime, sensCntct
+'//==============================================================================
+sub CscEncode()
+  dim rc
+  dim cscFlags
+
+  // Initialise the flags byte (only wheel revolution data present)
+  cscFlags = 1
+
+  // create the attribute buffer space
+  // 1 byte flags, 4 bytes wheel revolution, 2 bytes wheel time
+  rc = StrFill(csc$, 0, 7)
+  // Save the flags field
+  rc = BleEncode8(csc$, cscFlags, 0)
+  AssertResCode(rc, 6000)
+  // Save the wheel revolution field
+  rc = BleEncode32(csc$, wheelRevo, 1)
+  AssertResCode(rc, 6010)
+  // save the wheel time
+  rc = BleEncode16(csc$, wheelTime, 5)
+  AssertResCode(rc, 6020)
+
+endsub
+
+
+'//==============================================================================
+'//this function is called when the button 0 is pressed"
+'//==============================================================================
+function button0press()   
+  DIM rc
+
+  wheelRevo = wheelRevo + 1
+  wheelTime = GetTickCount()  
+  // wheelTime = GetTickSince(startTick) 
+  // print "Revo: ";wheelRevo;", Time: ";wheelTime;"\n"            
+  // startTick = GetTickCount()
+  CscEncode()
+  rc = BleCharValueNotify(chCscMeas, csc$)
+  AssertResCode(rc, 6030)
+
+  // busy wait for debounce 20 ms
+  TimerStart(0, 20, 0)
+  WHILE TimerRunning(0)
+  ENDWHILE
+endfunc 1
+
+
+'//==============================================================================
+'//==============================================================================
+function AddCharCscMeas() as integer
+  dim rc
+
+  //----------------------------------------------------------------------------
+  // Create the Cycling Speed and Cadence Measurement Characteristic which has a
+  // UUID of 0x2A5B
+  //----------------------------------------------------------------------------
+  dim mdAttr
+  dim mdCccd
+  dim mdSccd
+  dim chProp
+  //dim attr$
+
+  //++++
+  //Create the metadata for the value attribute in the characteristic
+  // Cycling Speed and Cadence Measure attribute has variable length
+  //++++
+  mdAttr=BleAttrMetadata(BLE_ATTR_ACCESS_NONE,BLE_ATTR_ACCESS_NONE,MAX_CSC_LEN,1,rc)
+  AssertResCode(rc,9200)
+  //There is a CCCD in this characteristic
+  mdCccd=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN,BLE_ATTR_ACCESS_OPEN,2,0,rc)
+  AssertResCode(rc,9202)
+  //There is no SCCD in this characteristic
+  mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc,9204)
+  //Create the Characteristic object
+  chProp = BLE_CHAR_PROPERTIES_NOTIFY
+  rc = BleCharNew(chProp,BleHandleUuid16(0x2A5B),mdAttr,mdCccd,mdSccd)
+  AssertResCode(rc,9206)
+
+  //++++
+  //Commit the characteristic
+  //++++
+  CscEncode()
+  rc = BleCharCommit(shCsc,csc$,chCscMeas)
+  AssertResCode(rc,9300)
+
+endfunc rc
+
+'//==============================================================================
+'//==============================================================================
+function AddCharCscFeature() as integer
+  dim rc
+
+  //----------------------------------------------------------------------------
+  // Create the Cycling Speed and Cadence Feature Charact. which has a
+  // UUID of 0x2A5C
+  //----------------------------------------------------------------------------
+  dim mdAttr
+  dim mdCccd
+  dim mdSccd
+  dim chProp
+  dim flgs
+  dim attr$
+
+  //++++
+  //Create the metadata for the value attribute in the characteristic
+  // Heart Rate attribute has variable length
+  //++++
+  mdAttr=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 1, 0, rc)
+  AssertResCode(rc, 9250)
+  //There is no CCCD in this characteristic
+  mdCccd=BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc, 9252)
+  //There is no SCCD in this characteristic
+  mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc, 9254)
+  //Create the Characteristic object
+  chProp = BLE_CHAR_PROPERTIES_READ
+  rc = BleCharNew(chProp, BleHandleUuid16(0x2A5C), mdAttr, mdCccd, mdSccd)
+  AssertResCode(rc, 9256)
+
+  //++++
+  //Commit the characteristic
+  //++++
+  attr$ ="\00"
+  // only Wheel Revolution Data Supported
+  rc = BleEncode16(attr$, 0x01, 0)
+  rc = BleCharCommit(shCsc, attr$, chCscFeat)
+  AssertResCode(rc, 9350)
+
+endfunc rc
+
+
+'//==============================================================================
+'//==============================================================================
+function AddCharCscSensLoc() as integer
+  dim rc
+
+  //----------------------------------------------------------------------------
+  // Create the  Cycling Speed and Cadence Sensor Location Charact. which has a
+  // UUID of 0x2A5D
+  //----------------------------------------------------------------------------
+  dim mdAttr
+  dim mdCccd
+  dim mdSccd
+  dim chProp
+  dim attr$
+
+  //++++
+  //Create the metadata for the value attribute in the characteristic
+  // Heart Rate attribute has variable length
+  //++++
+  mdAttr=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 1, 0, rc)
+  AssertResCode(rc, 9250)
+  //There is no CCCD in this characteristic
+  mdCccd=BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc, 9252)
+  //There is no SCCD in this characteristic
+  mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc, 9254)
+  //Create the Characteristic object
+  chProp = BLE_CHAR_PROPERTIES_READ
+  rc = BleCharNew(chProp, BleHandleUuid16(0x2A5D), mdAttr, mdCccd, mdSccd)
+  AssertResCode(rc, 9256)
+
+  //++++
+  //Commit the characteristic
+  //++++
+  attr$ ="\00"
+  rc = BleEncode8(attr$, sensLoc ,0)
+  rc = BleCharCommit(shCsc, attr$, chCscLoc)
+  AssertResCode(rc, 9350)
+
+endfunc rc
+
+
+'//==============================================================================
+'//==============================================================================
+function RegCscService() as integer
+  dim rc
+
+  //----------------------------------------------------------------------------
+  // Create a Cycling Speed and Cadence PRIMARY service attribure which has a
+  // uuid of 0x1816
+  //----------------------------------------------------------------------------
+  rc = BleSvcCommit(BLE_SERVICE_PRIMARY, BleHandleUuid16(0x1816), shCsc)
+  AssertResCode(rc, 9100)
+
+  //----------------------------------------------------------------------------
+  // Create the Cycling Speed and Cadence Measurement Characteristic which has a
+  // UUID of 0x2A5B
+  //----------------------------------------------------------------------------
+  rc = AddCharCscMeas()
+  AssertResCode(rc, 9110)
+
+  //----------------------------------------------------------------------------
+  // Create the Cycling Speed and Cadence Feature Characteristic which has a
+  // UUID of  0x2A5C
+  //----------------------------------------------------------------------------
+  rc = AddCharCscFeature()
+  AssertResCode(rc, 9120)
+
+  //----------------------------------------------------------------------------
+  // Create the Cycling Speed and Cadence Sensor Location Charact. which has a
+  // UUID of 0x2A5D
+  //----------------------------------------------------------------------------
+  rc = AddCharCscSensLoc()
+  AssertResCode(rc, 9130)
+
+  //----------------------------------------------------------------------------
+  // Create the Cycling Speed and Cadence SC Control Point. which has a
+  // UUID of  0x2A55
+  //----------------------------------------------------------------------------
+  //rc = AddCharCscScControlPoint()
+  //AssertResCode(rc, 9140)
+
+endfunc rc
+
+
+'//==============================================================================
+'// snsloc is an integer as follows:-
+'//   0 	Other
+'//   1 	Top of shoe
+'//   2 	In shoe
+'//   3 	Hip
+'//   4 	Front Wheel
+'//   5 	Left Crank
+'//   6 	Right Crank
+'//   7 	Left Pedal
+'//   8 	Right Pedal
+'//   9 	Front Hub
+'//   10 	Rear Dropout
+'//   11 	Chainstay
+'//   12 	Rear Wheel
+'//   13 	Rear Hub
+'//   14 	Chest
+'//   15 - 255 	Reserved for future use 
+
+
+'//==============================================================================
+sub InitCscService()
+  dim rc
+
+  rc = RegCscService()
+  AssertResCode(rc, 2072)
+  if rc==0 then
+     AddUuid(0x1816)
+  endif
+
+  //sets sio16 (Button 0) as a digital in with a strong (weak) pull up resistor
+  rc = gpiosetfunc(16, 1, 4)                 
+  AssertResCode(rc, 1000)
+
+  //binds a gpio transition low to an event. sio16 (button 0)
+  rc = gpiobindevent(1, 16, 1)             
+
+  //detects when button 0 is pressed and calls the function
+  onevent evgpiochan1 call button0press
+
+  startTick = GetTickCount()
+endsub
+
+'//==============================================================================
+'// will return 0 if successfully sent
+'//==============================================================================
+function SendCscData() as integer
+  dim rc
+
+  CscEncode()
+  rc = BleCharValueNotify(chCscMeas, csc$)
+  AssertResCode(rc, 2090)
+endfunc rc
+
+
+'//******************************************************************************
+'// Handler definitions
+'//******************************************************************************
+
+'//==============================================================================
+'// MUST be called from the BLE message handler
+'//==============================================================================
+sub CscOnBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER)
+  //dim rc
+  //select nMsgId
+  //case else
+    //Do nothing
+  //endselect
+endsub
+
+
+
+
+
+'//******************************************************************************
+'// Other initialisations
+'//******************************************************************************
+
