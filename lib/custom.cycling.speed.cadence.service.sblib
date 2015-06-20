@@ -40,10 +40,8 @@ dim wheelRevo               // cumulative wheel revolutions (unitless)
 dim wheelTime		    // last wheel event time (1/1024 s)
 dim sensLoc                 // wheel sensor location
 dim sensCntct               // wheel sensor contact status on/off
+dim feature		    // feature
 dim csc$ as string          // csc measurement attribute
-
-dim startTick
-
 
 '//******************************************************************************
 '// Initialisse Global Variable
@@ -92,22 +90,20 @@ endsub
 '//==============================================================================
 '//this function is called when the button 0 is pressed"
 '//==============================================================================
-function button0press()   
+function Button0Press()   
   DIM rc
 
   wheelRevo = wheelRevo + 1
   wheelTime = GetTickCount()  
-  // wheelTime = GetTickSince(startTick) 
-  // print "Revo: ";wheelRevo;", Time: ";wheelTime;"\n"            
-  // startTick = GetTickCount()
+  print "wheelRevo: ";wheelRevo;", wheelTime: ";wheelTime;"\n";
   CscEncode()
   rc = BleCharValueNotify(chCscMeas, csc$)
   AssertResCode(rc, 6030)
 
   // busy wait for debounce 20 ms
-  TimerStart(0, 20, 0)
-  WHILE TimerRunning(0)
-  ENDWHILE
+  //TimerStart(0, 20, 0)
+  //WHILE TimerRunning(0)
+  //ENDWHILE
 endfunc 1
 
 
@@ -124,31 +120,30 @@ function AddCharCscMeas() as integer
   dim mdCccd
   dim mdSccd
   dim chProp
-  //dim attr$
 
   //++++
   //Create the metadata for the value attribute in the characteristic
   // Cycling Speed and Cadence Measure attribute has variable length
   //++++
-  mdAttr=BleAttrMetadata(BLE_ATTR_ACCESS_NONE,BLE_ATTR_ACCESS_NONE,MAX_CSC_LEN,1,rc)
-  AssertResCode(rc,9200)
+  mdAttr = BleAttrMetadata(BLE_ATTR_ACCESS_NONE, BLE_ATTR_ACCESS_NONE, MAX_CSC_LEN, 1, rc)
+  AssertResCode(rc, 9200)
   //There is a CCCD in this characteristic
-  mdCccd=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN,BLE_ATTR_ACCESS_OPEN,2,0,rc)
-  AssertResCode(rc,9202)
+  mdCccd=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_OPEN, 2, 0, rc)
+  AssertResCode(rc, 9202)
   //There is no SCCD in this characteristic
   mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc,9204)
+  //AssertResCode(rc, 9204)
   //Create the Characteristic object
   chProp = BLE_CHAR_PROPERTIES_NOTIFY
-  rc = BleCharNew(chProp,BleHandleUuid16(0x2A5B),mdAttr,mdCccd,mdSccd)
-  AssertResCode(rc,9206)
+  rc = BleCharNew(chProp, BleHandleUuid16(0x2A5B), mdAttr, mdCccd, mdSccd)
+  AssertResCode(rc, 9206)
 
   //++++
   //Commit the characteristic
   //++++
   CscEncode()
-  rc = BleCharCommit(shCsc,csc$,chCscMeas)
-  AssertResCode(rc,9300)
+  rc = BleCharCommit(shCsc, csc$, chCscMeas)
+  AssertResCode(rc, 9208)
 
 endfunc rc
 
@@ -165,34 +160,31 @@ function AddCharCscFeature() as integer
   dim mdCccd
   dim mdSccd
   dim chProp
-  dim flgs
   dim attr$
 
-  //++++
-  //Create the metadata for the value attribute in the characteristic
-  // Heart Rate attribute has variable length
-  //++++
-  mdAttr=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 1, 0, rc)
-  AssertResCode(rc, 9250)
+  mdAttr = BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 2, 0, rc)
+  AssertResCode(rc, 9210)
   //There is no CCCD in this characteristic
-  mdCccd=BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9252)
+  mdCccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc, 9212)
   //There is no SCCD in this characteristic
   mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9254)
+  //AssertResCode(rc, 9214)
   //Create the Characteristic object
   chProp = BLE_CHAR_PROPERTIES_READ
   rc = BleCharNew(chProp, BleHandleUuid16(0x2A5C), mdAttr, mdCccd, mdSccd)
-  AssertResCode(rc, 9256)
+  AssertResCode(rc, 9216)
 
   //++++
   //Commit the characteristic
   //++++
-  attr$ ="\00"
+  attr$ ="\01\00"
+  feature = 1
   // only Wheel Revolution Data Supported
-  rc = BleEncode16(attr$, 0x01, 0)
+  rc = BleEncode16(attr$, feature, 0)
+  AssertResCode(rc, 9217)
   rc = BleCharCommit(shCsc, attr$, chCscFeat)
-  AssertResCode(rc, 9350)
+  AssertResCode(rc, 9218)
 
 endfunc rc
 
@@ -212,30 +204,26 @@ function AddCharCscSensLoc() as integer
   dim chProp
   dim attr$
 
-  //++++
-  //Create the metadata for the value attribute in the characteristic
-  // Heart Rate attribute has variable length
-  //++++
-  mdAttr=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 1, 0, rc)
-  AssertResCode(rc, 9250)
+  mdAttr = BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 1, 0, rc)
+  AssertResCode(rc, 9220)
   //There is no CCCD in this characteristic
-  mdCccd=BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9252)
+  mdCccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
+  //AssertResCode(rc, 9222)
   //There is no SCCD in this characteristic
   mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9254)
+  //AssertResCode(rc, 9224)
   //Create the Characteristic object
   chProp = BLE_CHAR_PROPERTIES_READ
   rc = BleCharNew(chProp, BleHandleUuid16(0x2A5D), mdAttr, mdCccd, mdSccd)
-  AssertResCode(rc, 9256)
+  AssertResCode(rc, 9226)
 
   //++++
   //Commit the characteristic
   //++++
   attr$ ="\00"
-  rc = BleEncode8(attr$, sensLoc ,0)
+  rc = BleEncode8(attr$, sensLoc, 0)
   rc = BleCharCommit(shCsc, attr$, chCscLoc)
-  AssertResCode(rc, 9350)
+  AssertResCode(rc, 9228)
 
 endfunc rc
 
@@ -313,17 +301,16 @@ sub InitCscService()
      AddUuid(0x1816)
   endif
 
-  //sets sio16 (Button 0) as a digital in with a strong (weak) pull up resistor
-  rc = gpiosetfunc(16, 1, 4)                 
+  // sets sio16 (Button 0) as a digital in with a weak pull up resistor
+  rc = GpioSetFunc(16, 1, 2)                 
   AssertResCode(rc, 1000)
 
-  //binds a gpio transition low to an event. sio16 (button 0)
-  rc = gpiobindevent(1, 16, 1)             
+  // binds a gpio transition low to an event. sio16 (button 0)
+  rc = GpioBindEvent(0, 16, 1) 
+  AssertResCode(rc, 1010)
 
-  //detects when button 0 is pressed and calls the function
-  onevent evgpiochan1 call button0press
-
-  startTick = GetTickCount()
+  // detects when button 0 is pressed and calls the function
+  ONEVENT EVGPIOCHAN0 CALL Button0Press
 endsub
 
 '//==============================================================================

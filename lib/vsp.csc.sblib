@@ -126,7 +126,6 @@ sub UartMsg(byref msg$ as string)
   rc = UartWrite(msg$)
 endsub
 
-
 '//==============================================================================
 '//==============================================================================
 function StartAds(adv as integer) as integer
@@ -137,136 +136,36 @@ function StartAds(adv as integer) as integer
   endif
 endfunc rc
 
-'//==============================================================================
-'//==============================================================================
-function StopAds() as integer
-  dim rc
-  rc=StopAdverts()
-  if rc==0 then
-    DbgMsg("Stop Adverts")
-  endif
-endfunc rc
-
-'//==============================================================================
-'//==============================================================================
-function ProcAdvCmd(vl as integer) as integer
-  dim rc
-  if vl==0 then
-    rc= StopAds()
-  else
-    vl=vl-1
-    rc= StartAds(vl)
-  endif
-endfunc rc
 
 '//==============================================================================
 '//==============================================================================
 sub ShowConnParms(nCtx as integer)
   dim rc
   dim intrvl,sprvto,slat
-  rc= BleGetCurConnParms(nCtx,intrvl,sprvto,slat)
-  AssertResCode(rc,1240)
+  rc= BleGetCurConnParms(nCtx, intrvl, sprvto, slat)
+  AssertResCode(rc, 1240)
   if rc==0 then
-    DbgMsgVal("Conn Interval",intrvl)
-    DbgMsgVal("Conn Supervision Timeout",sprvto)
-    DbgMsgVal("Conn Slave Latency",slat)
+    DbgMsgVal("Conn Interval", intrvl)
+    DbgMsgVal("Conn Supervision Timeout", sprvto)
+    DbgMsgVal("Conn Slave Latency", slat)
   endif
 endsub
 
 
-'//==============================================================================
-'//==============================================================================
-function ProcScanData(st$ as string)
-  dim rc
-  rc = 1
-  if strlen(st$) >= 1 then
-    adTag  = StrGetChr(st$,0)
-    adDta$ = mid$(st$,1,65535)
-    rc=0
-  endif
-endfunc rc
-
-
-'//==============================================================================
-'//==============================================================================
-function VSpOpen()
-  dim rc
-  rc = BleVSpOpen(tsz,rsz,flgs,uuhdl)
-  AssertResCode(rc,7400)
-  if rc==0 then
-   print "\nBleVSpOpen() OK  (uuhdl=";uuhdl;")\n"
-    //get the rx read block size, and limit to 60 so that large block
-    //from heap is not taken
-    rxb = BleVspInfo(1)
-    if rxb > 60 then
-      rxb = 60
-    endif
-  else
-  print "\nBleVSpOpen() FAILED  (rc=";rc;")\n"
-  endif
-endfunc rc
-
-'//==============================================================================
-'//==============================================================================
-function VSpClose()
-  BleVSpClose()
- print "\nBleVSpClose() OK"
-endfunc 0
-
-'//==============================================================================
-'//==============================================================================
-function VSpInfo(itype)
- print "\nBleVSpInfo(";itype;") returned ";BleVSpInfo(iType)
-endfunc 0
-
-'//==============================================================================
-'//==============================================================================
-function VSpWrite(x$)
-  dim n
-  n = BleVSpWrite(x$)
- print "\nBleVSpWrite(x$) returned ";n;" and len of x$ was ";strlen(x$)
-endfunc 0
-
-'//==============================================================================
-'//==============================================================================
-function VSpWriteEx(ln)
-  dim n,r,x$
-  r=strfill(x$,0,ln)
-  if r==0 then
-    ln= ln-1
-    for n=0 to ln
-      r = 0x41 + (n%57)   //'A' + offset
-      r = strsetchr(x$,r,n)
-    next
-    r = BleVSpWrite(x$)
-   print "\nBleVSpWrite(x$) returned ";r;" and len of x$ was ";strlen(x$)
-  else
-    exitfunc r
-  endif
-endfunc 0
-
-'//==============================================================================
-'//==============================================================================
-function VSpRead(ilen)
-  dim n
-  n = BleVSpRead(rx$,ilen)
-print "\nBleVSpRead(,";ilen;") returned ";n;" and datalen ";strlen(rx$)
- print "\nData=";rx$
-endfunc 0
 
 '//==============================================================================
 '//==============================================================================
 function VSpAdvert()
   dim rc,rpt$
-  rc = BleAdvRptAddUuid128(scRpt$,uuhdl)
-  AssertResCode(rc,7410)
+  rc = BleAdvRptAddUuid128(scRpt$, uuhdl)
+  AssertResCode(rc, 7410)
   if rc == 0 then
     rpt$=""
-    rc = BleAdvRptsCommit(rpt$,scRpt$)
-    AssertResCode(rc,7420)
+    rc = BleAdvRptsCommit(rpt$, scRpt$)
+    AssertResCode(rc, 7420)
   endif
   if rc == 0 then
-   print "\nVSP added 128 uuid to scanrpt"
+    DbgMsg("\nVSP added 128 uuid to scanrpt")
   endif
 endfunc rc
 
@@ -277,7 +176,7 @@ endfunc rc
 sub OnStartup()
   dim rc
 
-  InitSecurityMngr(PAIRING_IOCAPABILITY,MIN_LTK_SIZE, MAX_LTK_SIZE)
+  InitSecurityMngr(PAIRING_IOCAPABILITY, MIN_LTK_SIZE, MAX_LTK_SIZE)
 
   // Initialise services
   InitGapService()
@@ -293,8 +192,8 @@ sub OnStartup()
   InitAdvReports(advFlags)
 
   // Initialise VSP service
-  rc = VSpOpen()
-  AssertResCode(rc,7982)
+  rc = BleVSpOpen(tsz, rsz, flgs, uuhdl)
+  AssertResCode(rc, 7982)
 
   // add the VSP service to the scan report
   rc = VSpAdvert()
