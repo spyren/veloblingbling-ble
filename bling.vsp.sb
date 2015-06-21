@@ -22,12 +22,12 @@
 // Definitions
 //******************************************************************************
 
-        // This defines how the application startsup and is a bit mask.
-        // Bit 0 == 1 then OnStartup() is called just before waitevent
-        // Bit 1 == 1 then StartAds() is called just before waitevent
+// This defines how the application startsup and is a bit mask.
+// Bit 0 == 1 then OnStartup() is called just before waitevent
+// Bit 1 == 1 then StartAds() is called just before waitevent
 #define AUTO_STARTUP                         1
 
-        // Set this to 0 to disable all debugging messages
+// Set this to 0 to disable all debugging messages
 #define ENABLE_DEBUG_PRINTS                  1
 
 #define DEVICENAME                           "eWheel"
