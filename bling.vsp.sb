@@ -39,27 +39,10 @@
 #define HWREV                                "1.4"
 #define SWREV                                "2.1"
 
-//-------------------------------------------
-// TODO - Uncomment one of the following three lines
-// TODO #define SYSID                                "\01\02\03\04\05\06\07\08"
-// #define SYSID                                "@"
 #define SYSID                                ""
-//-------------------------------------------
-
-//-------------------------------------------
-// TODO - Uncomment one of the following two lines
-// #define REGLIST                              "\DE\AD\C0\DE"
 #define REGLIST                              ""
-//-------------------------------------------
-
-//-------------------------------------------
-// TODO - Uncomment one of the following two lines
-// #define PNPID                                "\01\04\BF\03\20\00\01"
 #define PNPID                                ""
-//-------------------------------------------
-
 #define CHAR_CR                              13
-
 
 // Minimum acceptable connection interval (7.5ms)
 #define MIN_CONN_INTERVAL                    7500
@@ -110,6 +93,25 @@
 #define NEXT_CONN_PARAMS_UPDATE_DELAY        5000
 #define MAX_CONN_PARAMS_UPDATE_DELAY         15000
 
+#define I2C_DATA_READY                       25
+
+#define DIGITAL_IN                           1
+#define DIGITAL_OUT                          2
+#define ANALOG_IN                            3
+#define PULL_DOWN_WEAK                       1
+#define PULL_UP_WEAK                         2
+#define PULL_DOWN_STRONG                     3
+#define PULL_UP_STRONG                       4
+
+#define LOW_TO_HIGH                          0
+#define HIGH_TO_LOW                          1
+
+#define DVK_BUTTON0                          16
+#define DVK_BUTTON1                          17
+#define DVK_LED0		                     18
+#define DVK_LED1                             19
+
+
 //******************************************************************************
 // Debugging resource as early as possible
 //******************************************************************************
@@ -143,13 +145,6 @@
 // Equivalent to main() in C
 //******************************************************************************
 
-DIM number
-number = GpioSetFunc(16,2,1)	// SIO16 LED (Target)
-number = GpioSetFunc(18,2,0) 	// SIO18 LED0 (Dev. Kit)
-number = GpioSetFunc(25,2,1)	// SIO25 BLlink BLE link established
-GpioWrite(16, 1)
-GpioWrite(18, 0)
-GpioWrite(25, 1)
 
 //------------------------------------------------------------------------------
 // Wait for a synchronous event.

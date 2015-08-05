@@ -30,6 +30,7 @@ sub HandlerOnErr()
 endsub
 onerror next HandlerOnErr
 
+
 //******************************************************************************
 // Library Import
 //******************************************************************************
@@ -41,26 +42,13 @@ onerror next HandlerOnErr
 #include "lib\security.manager.sblib"
 #include "lib\gap.service.sblib"
 #include "lib\device.information.service.sblib"
-#include "lib\custom.battery.service.sblib"
-#include "lib\custom.cycling.speed.cadence.service.sblib"
+#include "lib\battery.service.sblib"
+#include "lib\cycling.service.sblib"
+#include "lib\i2c.sblib"
 
 //******************************************************************************
 // Debugging resource after libs
 //******************************************************************************
-
-//==============================================================================
-//==============================================================================
-sub DbgInfo(id as integer)
-  select id
-  case 0
-    DbgPrnAdvReport(adRpt$)
-  case 1
-    DbgPrnAdvReport(scRpt$)
-
-  case else
-  endselect
-endsub
-
 
 //******************************************************************************
 // Global Variable Declarations
@@ -82,6 +70,7 @@ dim uuhdl                   // Service uuid handle for VSP
 dim rx$                     // vsp read data stored here
 dim rxb                     // vsp read block size
 
+
 //******************************************************************************
 // Initialisse Global Variable
 //******************************************************************************
@@ -102,6 +91,21 @@ flgs     = 1
 uuhdl    = 0
 
 rxb      = 60
+
+//==============================================================================
+//==============================================================================
+sub DbgInfo(id as integer)
+  select id
+  case 0
+    DbgPrnAdvReport(adRpt$)
+  case 1
+    DbgPrnAdvReport(scRpt$)
+
+  case else
+  endselect
+endsub
+
+
 
 //******************************************************************************
 // Function and Subroutine definitions
@@ -221,16 +225,18 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
   case BLE_EVBLEMSGID_CONNECT
     DbgMsgVal(" --- Connect : ",nCtx)
     ShowConnParms(nCtx)
-    GpioWrite(16, 0)
-    GpioWrite(18, 1)
-    GpioWrite(25, 0)
+    // GpioWrite(16, 0)
+    GpioWrite(DVK_LED0, 1)
+    // GpioWrite(25, 0)
+	state = 1
  
 
   case BLE_EVBLEMSGID_DISCONNECT
     DbgMsgVal(" --- Disconnect : ",nCtx)
-    GpioWrite(16, 1)
-    GpioWrite(18, 0)
-    GpioWrite(25, 1)
+    // GpioWrite(16, 1)
+    GpioWrite(DVK_LED0, 0)
+    // GpioWrite(25, 1)
+	state = 0
 
   case BLE_EVBLEMSGID_IMMEDIATE_ALERT_SERVICE_ALERT
     DbgMsgVal( "\n --- Immediate Alert Service Alert ", nCtx)

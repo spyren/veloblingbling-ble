@@ -2,7 +2,7 @@
 //      Create Cycling Speed and Cadence Service
 //      
 //  @file
-//      custom.cycling.speed.cadence.service.slib
+//      cycling.service.slib
 //  @copyright
 //      Peter Schmid, Switzerland
 //  @author
@@ -21,7 +21,7 @@
 // Definitions
 //******************************************************************************
 
-#define MAX_CSC_LEN                        20
+#define MAX_CSC_LEN                        20	// max length data value
 
 //******************************************************************************
 // Library Import
@@ -32,7 +32,7 @@
 //******************************************************************************
 
 dim shCsc as integer        // Service handle
-dim chCscMeas as integer    // Cycling Speed and Cadence Measurement Characteristic Handle
+dim chCscMeas as integer    // Cycling Speed and Cadence Meas. Char. Handle
 dim chCscLoc as integer     // Cycling Speed and Cadence Sensor Location Handle
 dim chCscFeat as integer    // Cycling Speed and Cadence Feature Handle
 
@@ -85,26 +85,6 @@ sub CscEncode()
   AssertResCode(rc, 6020)
 
 endsub
-
-
-//==============================================================================
-//this function is called when the button 0 is pressed"
-//==============================================================================
-function Button0Press()   
-  DIM rc
-
-  wheelRevo = wheelRevo + 1
-  wheelTime = GetTickCount()  
-  print "wheelRevo: ";wheelRevo;", wheelTime: ";wheelTime;"\n";
-  CscEncode()
-  rc = BleCharValueNotify(chCscMeas, csc$)
-  AssertResCode(rc, 6030)
-
-  // busy wait for debounce 20 ms
-  //TimerStart(0, 20, 0)
-  //WHILE TimerRunning(0)
-  //ENDWHILE
-endfunc 1
 
 
 //==============================================================================
@@ -300,16 +280,6 @@ sub InitCscService()
      AddUuid(0x1816)
   endif
 
-  // sets sio16 (Button 0) as a digital in with a weak pull up resistor
-  rc = GpioSetFunc(16, 1, 2)                 
-  AssertResCode(rc, 1000)
-
-  // binds a gpio transition low to an event. sio16 (button 0)
-  rc = GpioBindEvent(0, 16, 1) 
-  AssertResCode(rc, 1010)
-
-  // detects when button 0 is pressed and calls the function
-  ONEVENT EVGPIOCHAN0 CALL Button0Press
 endsub
 
 //==============================================================================
