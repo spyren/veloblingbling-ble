@@ -227,16 +227,16 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
     ShowConnParms(nCtx)
     // GpioWrite(16, 0)
     GpioWrite(DVK_LED0, 1)
-    // GpioWrite(25, 0)
-	state = 1
+    GpioWrite(I2C_DATA_READY, 0)
+    state = 1
  
 
   case BLE_EVBLEMSGID_DISCONNECT
     DbgMsgVal(" --- Disconnect : ",nCtx)
     // GpioWrite(16, 1)
     GpioWrite(DVK_LED0, 0)
-    // GpioWrite(25, 1)
-	state = 0
+    GpioWrite(I2C_DATA_READY, 1)
+    state = 0
 
   case BLE_EVBLEMSGID_IMMEDIATE_ALERT_SERVICE_ALERT
     DbgMsgVal( "\n --- Immediate Alert Service Alert ", nCtx)
@@ -332,6 +332,10 @@ if (AUTO_STARTUP & 2) != 0 then
   dim rc
   rc=StartAds(ADV_IND)
 endif
+
+// sets I2C_DATA_READY (sio25) as a digital in
+rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)    
+AssertResCode(res, 1000)
 
 
 // Send user prompt for uart based command interface
