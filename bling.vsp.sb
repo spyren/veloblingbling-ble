@@ -15,7 +15,7 @@
 //   	Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
 //                upass.vsp.sb
 //  @version
-//      2.1 
+//      2.2 
 ////////////////////////////////////////////////////////////////////////////////
 
 //******************************************************************************
@@ -28,7 +28,7 @@
 #define AUTO_STARTUP                         1
 
 // Set this to 0 to disable all debugging messages
-#define ENABLE_DEBUG_PRINTS                  1
+#define ENABLE_DEBUG_PRINTS                  0
 
 #define DEVICENAME                           "eWheel"
 #define DEVICENAME_WRITABLE                  1
@@ -37,7 +37,7 @@
 #define MODELSTR                             "Velo Bling-Bling"
 #define SERIALNUM                            "12345"
 #define HWREV                                "1.4"
-#define SWREV                                "2.1"
+#define SWREV                                "2.2rc1"
 
 #define SYSID                                ""
 #define REGLIST                              ""

@@ -1,0 +1,157 @@
+//  @brief
+//      I2C Communication between BL600 and Bling Bling MCU
+//	The BL600 is Master :-( BL600 can only be the single master)
+//	High to low transition on GPIO25: Data ready for read
+//	All registers are 32 bit
+//	A write with only 8 bit data sets the register address
+//	
+//
+//	Reg 
+//	 -  address	  8bit wr  bit7: auto increment     
+//	 0  state        32bit wr  bit0: BLE link established
+//	 4  wheelRevo    32bit rd  see CSC measurement
+//	 8  wheelTime    32bit rd  see CSC measurement	
+//	12  displayMode  32bit wr  bit0-3   LOWER TOPSIDE
+//		     	           bit4-7   UPPER TOPSIDE
+//			           bit8-11  BLING TOPSIDE
+//			           bit16-19 LOWER BOTTOMSIDE
+//			           bit20-23 UPPER BOTTOMSIDE
+//			           bit24-27 BLING BOTTOMSIDE
+//	    0 CYCLOCOMPUTER, 1 STRING, 2 IMAGE, 3 LIGHT, 4 BLANK
+//	16  cycleMode    32bit wr  bit0-3   LOWER TOPSIDE
+//		     	           bit4-7   UPPER TOPSIDE
+//			           bit8-11  BLING TOPSIDE
+//			           bit16-19 LOWER BOTTOMSIDE
+//			           bit20-23 UPPER BOTTOMSIDE
+//			           bit24-27 BLING BOTTOMSIDE
+//	24  displayColor 32bit wr
+//	28  displayImage 32bit wr
+//  @file
+//      i2c.slib
+//  @copyright
+//      Peter Schmid, Switzerland
+//  @author
+//      Peter Schmid, peter@spyr.ch
+//  @date
+//      2014-06-21
+//  @remark     
+//      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
+////////////////////////////////////////////////////////////////////////////////
+
+//******************************************************************************
+// Definitions
+//******************************************************************************
+#define SLAVE_ADDRESS		1	// I2C address main MCU 
+#define STATE_REG		0	// state register
+#define WHEEL_REVO_REG		4	// wheelRevo register
+#define WHEEL_TIME_REG		8	// wheelTime register
+#define DISPLAY_MODE_REG	12	// displayMode register
+#define CYCLE_MODE_REG		16	// cycleMode register
+#define DISPLAY_COLOR_REG	20	// displayColor register
+#define DISPLAY_IMAGE_REG	24	// displayImage register
+#define DISPLAY_MODE_MOD	1	// displayMode modified
+#define CYCLE_MODE_MOD		2	// cycleMode modified
+#define DISPLAY_COLOR_MOD	4	// displayColor modified
+#define DISPLAY_IMAGE_MOD	8	// displayImage modified
+#define BLE_LINK_EST		1	// BLE Link established
+
+//******************************************************************************
+// Register Error Handler as early as possible
+//******************************************************************************
+
+//******************************************************************************
+// Library Import
+//******************************************************************************
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+DIM state
+DIM displayMode
+DIM cycleMode
+DIM displayColor
+DIM displayImage
+DIM modifiedBits
+
+//******************************************************************************
+// Initialise Global Variables
+//******************************************************************************
+state = 0
+displayMode = 0
+cycleMode = 0
+displayColor = 0
+displayImage = 0
+modifiedBits = 0
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+
+//==============================================================================
+//this function is called when high to low transition: Data ready for read
+//==============================================================================
+FUNCTION DataReady()   
+  DIM rc
+  DIM startTick
+
+  rc = I2cWriteREG32(SLAVE_ADDRESS, STATE_REG, State) // 5201
+  AssertResCode(rc, 8010)
+  startTick = GetTickCount()
+  DO
+    // wait 1 ms
+  UNTIL GetTickSince(startTick) == 1
+
+  rc = I2cReadREG32(SLAVE_ADDRESS, WHEEL_REVO_REG, wheelRevo)
+  AssertResCode(rc, 8021)
+  startTick = GetTickCount()
+  DO
+    // wait 1 ms
+  UNTIL GetTickSince(startTick) == 1
+
+  rc = I2cReadREG32(SLAVE_ADDRESS, WHEEL_TIME_REG, wheelTime)
+  AssertResCode(rc, 8022)
+  startTick = GetTickCount()
+  DO
+    // wait 1 ms
+  UNTIL GetTickSince(startTick) == 1
+
+  // IF modifiedBits & DISPLAY_MODE_MOD THEN
+  //   rc = I2cWriteREG32(SLAVE_ADDRESS, DISPLAY_MODE_REG, displayMode)
+  //	AssertResCode(rc, 8040)
+  // ENDIF
+
+  //print "wheelRevo: ";wheelRevo;", wheelTime: ";wheelTime;"\n";
+
+  // IF State == 1 THEN
+  //   CscEncode()
+  //   rc = BleCharValueNotify(chCscMeas, csc$)
+  //   AssertResCode(rc, 8050)
+  // ENDIF
+
+endfunc 1
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+// Init
+//==============================================================================
+DIM res
+DIM i2cHandle
+
+res = I2cOpen(100000, 1, i2cHandle) // 5226
+AssertResCode(res, 8000)
+
+// sets I2C_DATA_READY (sio25) as a digital in
+res = GpioSetFunc(I2C_DATA_READY, DIGITAL_IN, PULL_UP_WEAK)                 
+AssertResCode(res, 8100)
+
+// binds a gpio transition low to an event. sio25
+//res = GpioBindEvent(0, I2C_DATA_READY, HIGH_TO_LOW) 
+// ONEVENT EVGPIOCHAN0 CALL DataReady
+
+// GpioAssignEvent needs less current than GpioBindEvent
+res = GpioAssignEvent(0, I2C_DATA_READY, HIGH_TO_LOW)
+AssertResCode(res, 8110)
+// detects when new data is ready and calls the function
+ONEVENT EVDETECTCHAN0 CALL DataReady
+

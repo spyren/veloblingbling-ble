@@ -12,8 +12,6 @@
 //  @remark     
 //      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
 //   	Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
-//  @version
-//      1.1 
 ////////////////////////////////////////////////////////////////////////////////
 
 //******************************************************************************
@@ -227,7 +225,8 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
     ShowConnParms(nCtx)
     // GpioWrite(16, 0)
     GpioWrite(DVK_LED0, 1)
-    GpioWrite(I2C_DATA_READY, 0)
+    // BLE state info over port
+    //GpioWrite(I2C_DATA_READY, 0)
     state = 1
  
 
@@ -235,7 +234,8 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
     DbgMsgVal(" --- Disconnect : ",nCtx)
     // GpioWrite(16, 1)
     GpioWrite(DVK_LED0, 0)
-    GpioWrite(I2C_DATA_READY, 1)
+    // BLE state info over port
+    //GpioWrite(I2C_DATA_READY, 1)
     state = 0
 
   case BLE_EVBLEMSGID_IMMEDIATE_ALERT_SERVICE_ALERT
@@ -334,7 +334,9 @@ if (AUTO_STARTUP & 2) != 0 then
 endif
 
 // sets I2C_DATA_READY (sio25) as a digital in
-rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)    
+rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_IN, 1)    
+// sets I2C_DATA_READY (sio25) as a digital out
+//rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)    
 AssertResCode(res, 1000)
 
 
