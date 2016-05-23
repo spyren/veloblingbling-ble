@@ -13,7 +13,7 @@
 //    	Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
 //                upass.vsp.sb
 //  @version
-//      2.2
+//      2.4
 //  @copyright
 //      Peter Schmid, Switzerland
 //
@@ -52,7 +52,7 @@
 #define MODELSTR                             "Velo Bling-Bling"
 #define SERIALNUM                            "12345"
 #define HWREV                                "1.4"
-#define SWREV                                "2.3"
+#define SWREV                                "2.4"
 
 #define SYSID                                ""
 #define REGLIST                              ""
