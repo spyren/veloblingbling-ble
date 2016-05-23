@@ -1,17 +1,32 @@
 //  @brief
 //      vSP Bridge Mode, Battery Service and CSC Service
-//      
+//
 //  @file
 //      vsp.csc.slib
-//  @copyright
-//      Peter Schmid, Switzerland
 //  @author
 //      Peter Schmid, peter@spyr.ch
 //  @date
 //      2014-05-14
-//  @remark     
+//  @remark
 //      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
-//   	Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+//   	  Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+//  @copyright
+//      Peter Schmid, Switzerland
+//
+//      This file is part of "Velo Bling-Bling" BLE application software.
+//
+//      "Velo Bling-Bling" software is free software: you can redistribute it
+//      and/or modify it under the terms of the GNU General Public License as
+//      published by the Free Software Foundation, either version 3 of the
+//      License, or (at your option) any later version.
+//
+//      "Velo Bling-Bling" is distributed in the hope that it will be useful,
+//      but WITHOUT ANY WARRANTY; without even the implied warranty of
+//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//      GNU General Public License for more details.
+//
+//      You should have received a copy of the GNU General Public License along
+//      with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
 //******************************************************************************
@@ -186,10 +201,10 @@ sub OnStartup()
 
   // Initialise Battery Service
   InitBatService(50, 0)
-  
+
   // Initialise CSC Service
   InitCscService()
-  
+
   // Initiliase advert and scan reports
   InitAdvReports(advFlags)
 
@@ -228,7 +243,7 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
     // BLE state info over port
     //GpioWrite(I2C_DATA_READY, 0)
     state = 1
- 
+
 
   case BLE_EVBLEMSGID_DISCONNECT
     DbgMsgVal(" --- Disconnect : ",nCtx)
@@ -308,15 +323,15 @@ endfunc 1
 
 OnEvent  EVBLE_ADV_TIMEOUT  call HandlerBlrAdvTimOut
 
-// EVBLEMSG indicate when signifficant BLE event occurs. 
+// EVBLEMSG indicate when signifficant BLE event occurs.
 // Function HandlerBleMsg is called to interparate Message ID and context
-OnEvent  EVBLEMSG           call HandlerBleMsg 
+OnEvent  EVBLEMSG           call HandlerBleMsg
 
 // all events have the same handler
 // EVVSPRX is thrown when VSP is open and data has arrived
-OnEvent  EVVSPRX            call HandlerLoop 
+OnEvent  EVVSPRX            call HandlerLoop
 // EVUARTRX  = data has arrived at the UART interface
-OnEvent  EVUARTRX           call HandlerLoop 
+OnEvent  EVUARTRX           call HandlerLoop
 OnEvent  EVVSPTXEMPTY       call HandlerLoop
 OnEvent  EVUARTTXEMPTY      call HandlerLoop
 
@@ -334,9 +349,9 @@ if (AUTO_STARTUP & 2) != 0 then
 endif
 
 // sets I2C_DATA_READY (sio25) as a digital in
-rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_IN, 1)    
+rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_IN, 1)
 // sets I2C_DATA_READY (sio25) as a digital out
-//rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)    
+//rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)
 AssertResCode(res, 1000)
 
 
@@ -350,4 +365,3 @@ UartMsg(msg$)
 
 // Send an OK response
 UartRsp(0)
-

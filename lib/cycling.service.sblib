@@ -1,17 +1,32 @@
 //  @brief
 //      Create Cycling Speed and Cadence Service
-//      
+//
 //  @file
 //      cycling.service.slib
-//  @copyright
-//      Peter Schmid, Switzerland
 //  @author
 //      Peter Schmid, peter@spyr.ch
 //  @date
 //      2015-06-16
-//  @remark     
+//  @remark
 //      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
-//   	Example : custom.heart.rate.service.slib 
+//   	  Example : custom.heart.rate.service.slib
+//  @copyright
+//      Peter Schmid, Switzerland
+//
+//      This file is part of "Velo Bling-Bling" BLE application software.
+//
+//      "Velo Bling-Bling" software is free software: you can redistribute it
+//      and/or modify it under the terms of the GNU General Public License as
+//      published by the Free Software Foundation, either version 3 of the
+//      License, or (at your option) any later version.
+//
+//      "Velo Bling-Bling" is distributed in the hope that it will be useful,
+//      but WITHOUT ANY WARRANTY; without even the implied warranty of
+//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//      GNU General Public License for more details.
+//
+//      You should have received a copy of the GNU General Public License along
+//      with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -19,7 +34,7 @@
 // Definitions
 //******************************************************************************
 
-#define MAX_CSC_LEN                        20	// max length data value
+#define MAX_CSC_LEN  20     // max length data value
 
 //******************************************************************************
 // Library Import
@@ -35,10 +50,10 @@ dim chCscLoc as integer     // Cycling Speed and Cadence Sensor Location Handle
 dim chCscFeat as integer    // Cycling Speed and Cadence Feature Handle
 
 dim wheelRevo               // cumulative wheel revolutions (unitless)
-dim wheelTime		    // last wheel event time (1/1024 s)
+dim wheelTime               // last wheel event time (1/1024 s)
 dim sensLoc                 // wheel sensor location
 dim sensCntct               // wheel sensor contact status on/off
-dim feature		    // feature
+dim feature                 // feature
 dim csc$ as string          // csc measurement attribute
 
 //******************************************************************************
@@ -266,7 +281,7 @@ endfunc rc
 //   12   Rear Wheel
 //   13   Rear Hub
 //   14   Chest
-//   15 - 255 	Reserved for future use 
+//   15 - 255 	Reserved for future use
 
 //==============================================================================
 sub InitCscService()
@@ -300,4 +315,3 @@ endfunc rc
 //******************************************************************************
 // Other initialisations
 //******************************************************************************
-

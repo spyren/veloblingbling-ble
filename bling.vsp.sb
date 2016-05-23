@@ -1,21 +1,36 @@
 //  @brief
 //      vSP Bridge Mode
-//	BLE Master (Smart Phone) <-> BLE Slave BL600 UART <-> uC (Bling)
-//      
+//	    BLE Master (Smart Phone) <-> BLE Slave BL600 UART <-> uC (Bling)
+//
 //  @file
 //      bling.vsp.sb
-//  @copyright
-//      Peter Schmid, Switzerland
 //  @author
 //      Peter Schmid, peter@spyr.ch
 //  @date
 //      2014-05-14
-//  @remark     
+//  @remark
 //      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
-//   	Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+//    	Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
 //                upass.vsp.sb
 //  @version
-//      2.2 
+//      2.2
+//  @copyright
+//      Peter Schmid, Switzerland
+//
+//      This file is part of "Velo Bling-Bling" BLE application software.
+//
+//      "Velo Bling-Bling" software is free software: you can redistribute it
+//      and/or modify it under the terms of the GNU General Public License as
+//      published by the Free Software Foundation, either version 3 of the
+//      License, or (at your option) any later version.
+//
+//      "Velo Bling-Bling" is distributed in the hope that it will be useful,
+//      but WITHOUT ANY WARRANTY; without even the implied warranty of
+//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//      GNU General Public License for more details.
+//
+//      You should have received a copy of the GNU General Public License along
+//      with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
 
 //******************************************************************************
@@ -30,14 +45,14 @@
 // Set this to 0 to disable all debugging messages
 #define ENABLE_DEBUG_PRINTS                  0
 
-#define DEVICENAME                           "eWheel"
+#define DEVICENAME                           "VeloBlingBling"
 #define DEVICENAME_WRITABLE                  1
 #define APPEARANCE                           BLE_APPEARANCE_GENERIC_TAG
 #define MANF_NAME                            "spyr"
 #define MODELSTR                             "Velo Bling-Bling"
 #define SERIALNUM                            "12345"
 #define HWREV                                "1.4"
-#define SWREV                                "2.2rc1"
+#define SWREV                                "2.3"
 
 #define SYSID                                ""
 #define REGLIST                              ""
@@ -55,8 +70,8 @@
 #define SLAVE_LATENCY                        0
 
 // Connection supervisory timeout (4 seconds) - max 32 seconds
-//#define CONN_SUP_TIMEOUT                     500000 
-#define CONN_SUP_TIMEOUT                     10000000 
+//#define CONN_SUP_TIMEOUT                     500000
+#define CONN_SUP_TIMEOUT                     10000000
 
 // DiscoverableMode, set to BLE_DISCOVERABILITY_xxx
 #define DISCOVERY_MODE                       BLE_DISCOVERABILITY_GENERAL
@@ -67,7 +82,7 @@
 #define ADV_APPEARANCE                       0
 
 // Advertise interval
-#define ADV_INTERVAL_MS                      1000
+#define ADV_INTERVAL_MS                      500
 
 // Advertise timeout
 #define ADV_TIMEOUT_MS                       0
@@ -93,6 +108,7 @@
 #define NEXT_CONN_PARAMS_UPDATE_DELAY        5000
 #define MAX_CONN_PARAMS_UPDATE_DELAY         15000
 
+// I/O Definitions
 #define I2C_DATA_READY                       25
 
 #define DIGITAL_IN                           1
@@ -108,48 +124,22 @@
 
 #define DVK_BUTTON0                          16
 #define DVK_BUTTON1                          17
-#define DVK_LED0		                     18
+#define DVK_LED0	                     18
 #define DVK_LED1                             19
 
-
-//******************************************************************************
-// Debugging resource as early as possible
-//******************************************************************************
 
 //******************************************************************************
 // Library Import
 //******************************************************************************
 #include "lib\vsp.csc.sblib"
 
-//******************************************************************************
-// Debugging resource after libs
-//******************************************************************************
-
-//******************************************************************************
-// Global Variable Declarations
-//******************************************************************************
-
-//******************************************************************************
-// Initialisse Global Variable
-//******************************************************************************
-
-//******************************************************************************
-// Function and Subroutine definitions
-//******************************************************************************
-
-//******************************************************************************
-// Handler definitions
-//******************************************************************************
 
 //******************************************************************************
 // Equivalent to main() in C
 //******************************************************************************
-
 
 //------------------------------------------------------------------------------
 // Wait for a synchronous event.
 // An application can have multiple <WaitEvent> statements
 //------------------------------------------------------------------------------
 WaitEvent
-
-
