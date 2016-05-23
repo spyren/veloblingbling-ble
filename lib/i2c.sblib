@@ -121,6 +121,7 @@ DIM cycleMode
 DIM displayColor
 DIM displayImage
 DIM modifiedBits
+DIM lastWheelRevo
 
 //******************************************************************************
 // Initialise Global Variables

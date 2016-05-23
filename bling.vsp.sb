@@ -45,7 +45,7 @@
 // Set this to 0 to disable all debugging messages
 #define ENABLE_DEBUG_PRINTS                  0
 
-#define DEVICENAME                           "VeloBlingBling"
+#define DEVICENAME                           "VeloBling"
 #define DEVICENAME_WRITABLE                  1
 #define APPEARANCE                           BLE_APPEARANCE_GENERIC_TAG
 #define MANF_NAME                            "spyr"
