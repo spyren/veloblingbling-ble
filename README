@@ -1,0 +1,48 @@
+BLE Application Software for the Velo Bling-Bling Project
+*********************************************************
+
+http://veloblingbling.ch
+
+LED lights for bicycle wheels.
+16 multi color LEDs on each side (PCB top- and bottom side).
+There are two windows (upper and lower) on each side for display
+dynamic information like speed, trip time, trip distance, etc. or
+static information like strings and images.
+The windows have a resolution of 100 x 16 pixels.
+The space between the windows can be filled with a pattern/image
+(AKA blingbling).
+
+This application software runs on the BL600 Module (BLE slave) and communicates
+over the UART and I2C interface with the main MCU (MK22DX256VLF5).
+
+BLE Master (e.g. Smart Phone) <-> BLE Slave BL600 UART & I2C <-> main MCU
+
+The BLE Master can use the propriarity vSP Bridge Mode to communicate over the
+UART with the main MCU like a serial terminal (Command Line Interface CLI). The
+Cycling Speed and Cadence Service (CSC) is a standard Bluetooth service, data
+are exchanged between main MCU and BL600 by I2C.
+
+The USB CDC on the main MCU can be used as a terminal interface for the BL600
+module. You can use the UwTerminalX for communicating and downloading
+applications onto Laird's BL600 module.
+
+
+Copyright
+*********
+
+Peter Schmid, Zurich, Switzerland, peter@spyr.ch
+
+This file is part of "Velo Bling-Bling" BLE application software.
+
+"Velo Bling-Bling" software is free software: you can redistribute it
+and/or modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+"Velo Bling-Bling" is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
