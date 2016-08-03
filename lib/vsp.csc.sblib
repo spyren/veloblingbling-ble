@@ -1,5 +1,6 @@
 //  @brief
-//      vSP Bridge Mode, Battery Service and CSC Service
+//      vSP Bridge Mode, Battery Service and CSC Service.
+//      Battery Service disabled (no longer included in 1.8.88.0?).
 //
 //  @file
 //      vsp.csc.slib
@@ -8,7 +9,7 @@
 //  @date
 //      2014-05-14
 //  @remark
-//      Language: smartBASIC 1.5.70.0, LAIRD BL600 Module
+//      Language: smartBASIC 1.8.88.0, LAIRD BL600 Module
 //   	  Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
 //  @copyright
 //      Peter Schmid, Switzerland
@@ -55,7 +56,7 @@ onerror next HandlerOnErr
 #include "lib\security.manager.sblib"
 #include "lib\gap.service.sblib"
 #include "lib\device.information.service.sblib"
-#include "lib\battery.service.sblib"
+//#include "lib\battery.service.sblib"
 #include "lib\cycling.service.sblib"
 #include "lib\i2c.sblib"
 
@@ -200,7 +201,7 @@ sub OnStartup()
   InitDisService()
 
   // Initialise Battery Service
-  InitBatService(50, 0)
+  //InitBatService(50, 0)
 
   // Initialise CSC Service
   InitCscService()
