@@ -59,6 +59,8 @@
 //                          bit16-23 BLING
 //                          bit24-31
 //                0 .. 49
+//      32  batteryLevel 32bit wr
+//                          bit0-7  Level (0 .. 100 %)
 //
 //  @file
 //      i2c.slib
@@ -97,7 +99,9 @@
 #define DISPLAY_MODE_REG  12    // displayMode register
 #define CYCLE_MODE_REG    16    // cycleMode register
 #define DISPLAY_COLOR_REG 20    // displayColor register
-#define DISPLAY_IMAGE_REG 24    // displayImage register
+#define DISPLAY_IMGT_REG  24    // displayImageTop register
+#define DISPLAY_IMGB_REG  28    // displayImageBottom register
+#define BATTERY_LEVEL     32    // batteryLevel register
 #define DISPLAY_MODE_MOD  1     // displayMode modified
 #define CYCLE_MODE_MOD    2     // cycleMode modified
 #define DISPLAY_COLOR_MOD 4     // displayColor modified
