@@ -1,114 +1,140 @@
-//  @brief
-//      vSP Bridge Mode
-//	    BLE Master (Smart Phone) <-> BLE Slave BL652 UART <-> uC (Bling)
-//
-//  @file
-//      bling.vsp.sb
-//  @author
-//      Peter Schmid, peter@spyr.ch
-//  @date
-//      2014-05-14
-//  @remark
-//      Language: smartBASIC 1.8.88.0, LAIRD BL600/BL652 Module
-//    	Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
-//                upass.vsp.sb
-//  @version
-//      2.4
-//  @copyright
-//      Peter Schmid, Switzerland
-//
-//      This file is part of "Velo Bling-Bling" BLE application software.
-//
-//      "Velo Bling-Bling" software is free software: you can redistribute it
-//      and/or modify it under the terms of the GNU General Public License as
-//      published by the Free Software Foundation, either version 3 of the
-//      License, or (at your option) any later version.
-//
-//      "Velo Bling-Bling" is distributed in the hope that it will be useful,
-//      but WITHOUT ANY WARRANTY; without even the implied warranty of
-//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//      GNU General Public License for more details.
-//
-//      You should have received a copy of the GNU General Public License along
-//      with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
-////////////////////////////////////////////////////////////////////////////////
+'******************************************************************************
+'   @brief
+'       Velo Bling-Bling smartBASIC BL652 application
+'
+'       BLE Cycling Speed and Cadence Profile Server (peripheral role)
+'       Smart Phone <-Central-BLE-Peripheral-> BL652 CSC Server <-Master I2C Slave-> uC  
+'
+'       vSP Bridge Mode for Command Line Interface
+'       Smart Phone <-Central-BLE-Peripheral-> BL652 vSP <-UART-> uC (Bling)
+'
+'       Advertice following services:
+'           0x180A Device Information
+'           0x180F Battery Service
+'           0x1816 Cycling Speed and Cadence
+'           569a1101-b87f-490c-92cb-11ba5ea5167c vSP
+'
+'       Appearence 0x2A01: 1154 Cycling Speed Sensor
+'       Writable GAP Device Name characteristic
+'
+'       Advertising interval (CSC Profile)
+'           30 ms to 60 ms (fast connection, first 30 s)
+'           1 to 1.2 s (reduced power, after 30 s)
+'
+'   @file
+'       bling.vsp.sb
+'   @author
+'       Peter Schmid, peter@spyr.ch
+'   @date
+'       2014-05-14
+'   @remark
+'       Language: smartBASIC 1.8.88.0, LAIRD BL600/BL652 Module
+'       Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+'                upass.vsp.sb
+'   @version
+'       2.4
+'   @copyright
+'       Peter Schmid, Switzerland
+'
+'       This file is part of "Velo Bling-Bling" BLE application software.
+'
+'       "Velo Bling-Bling" software is free software: you can redistribute it
+'       and/or modify it under the terms of the GNU General Public License as
+'       published by the Free Software Foundation, either version 3 of the
+'       License, or (at your option) any later version.
+'
+'       "Velo Bling-Bling" is distributed in the hope that it will be useful,
+'       but WITHOUT ANY WARRANTY; without even the implied warranty of
+'       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+'       GNU General Public License for more details.
+'
+'       You should have received a copy of the GNU General Public License along
+'       with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
+'
+'******************************************************************************
 
-//******************************************************************************
-// Definitions
-//******************************************************************************
+'******************************************************************************
+' Definitions
+'******************************************************************************
 
-// This defines how the application startsup and is a bit mask.
-// Bit 0 == 1 then OnStartup() is called just before waitevent
-// Bit 1 == 1 then StartAds() is called just before waitevent
-#define AUTO_STARTUP                         1
-
-// Set this to 0 to disable all debugging messages
+' Set this to 0 to disable all debugging messages
 #define ENABLE_DEBUG_PRINTS                  0
 
 #define DEVICENAME                           "VeloBling"
 #define DEVICENAME_WRITABLE                  1
-#define APPEARANCE                           BLE_APPEARANCE_GENERIC_TAG
+'#define APPEARANCE                           BLE_APPEARANCE_GENERIC_TAG
+' Cycling: Speed Sensor
+#define APPEARANCE                           1154
 #define MANF_NAME                            "spyr"
 #define MODELSTR                             "Velo Bling-Bling"
 #define SERIALNUM                            "12345"
 #define HWREV                                "1.4"
-#define SWREV                                "2.4"
+#define SWREV                                "2.5"
 
-#define SYSID                                ""
-#define REGLIST                              ""
-#define PNPID                                ""
+'#define SYSID                                ""
+'#define REGLIST                              ""
+'#define PNPID                                ""
+#define SYSID                               "@"
+'#define SYSID                               "\01\02\03\04\05\06\07\08"
+#define REGLIST                             "\DE\AD\C0\DE"
+#define PNPID                               "\01\04\BF\03\20\00\01"
+
+
 #define CHAR_CR                              13
 
-// Minimum acceptable connection interval (7.5ms)
+' Minimum acceptable connection interval (7.5ms)
 #define MIN_CONN_INTERVAL                    7500
 
-// Maximum acceptable connection interval (1 second).
+' Maximum acceptable connection interval (1 second).
 #define MAX_CONN_INTERVAL                    1000000
 
-// Slave latency -- number of conn events that can be missed
-// Effective Conn interval will be (SLAVE_LATENCY+1)*ACTUAL_CONN_INTERVAL
+' Slave latency -- number of conn events that can be missed
+' Effective Conn interval will be (SLAVE_LATENCY+1)*ACTUAL_CONN_INTERVAL
 #define SLAVE_LATENCY                        0
 
-// Connection supervisory timeout (4 seconds) - max 32 seconds
-//#define CONN_SUP_TIMEOUT                     500000
+' Connection supervisory timeout (4 seconds) - max 32 seconds
+'#define CONN_SUP_TIMEOUT                     500000
 #define CONN_SUP_TIMEOUT                     10000000
 
-// DiscoverableMode, set to BLE_DISCOVERABILITY_xxx
+' DiscoverableMode, set to BLE_DISCOVERABILITY_xxx
 #define DISCOVERY_MODE                       BLE_DISCOVERABILITY_GENERAL
 
-#define MAX_DEVNAME_CHRS                     10
+#define MAX_DEVNAME_CHRS                     12
 
-// Set Appearance advertise 0 to suppress
-#define ADV_APPEARANCE                       0
+' Set Appearance advertise 0 to suppress
+'#define ADV_APPEARANCE                       0
+#define ADV_APPEARANCE                       1
 
-// Advertise interval
+' Advertise interval
 #define ADV_INTERVAL_MS                      500
 
-// Advertise timeout
+' Advertise timeout
 #define ADV_TIMEOUT_MS                       0
 
-// Whitelist Policy in Adverts
-#define ADV_WHITELIST_FILTER_POLICY          ADV_FILTERPOLICY_BOTH
+' Whitelist Policy in Adverts
+'#define ADV_WHITELIST_FILTER_POLICY          ADV_FILTERPOLICY_BOTH
+#define ADV_WHITELIST_FILTER_POLICY         ADV_FILTERPOLICY_ANY
 
-// Minimum long term key size in octets
+' Minimum long term key size in octets
 #define MIN_LTK_SIZE                         8
 
-// Maximum long term key size in octets
+' Maximum long term key size in octets
 #define MAX_LTK_SIZE                         16
 
-// Set this to non-zero to enable notiy on batt service
+' Set this to non-zero to enable notiy on batt service
 #define BATT_NOTIFY                          0
 #define BATT_INIT_LEVEL_PERC                 100
 
-// This sets the pairing i/p capability using bonding
+' This sets the pairing i/p capability using bonding
+' None also known as ‘Just Works’ (unauthenticated pairing)
 #define PAIRING_IOCAPABILITY                 BLE_IOCAPABILITY_NONE
 
-// Connection Update Negotiation paramters
+' Connection Update Negotiation paramters
 #define FIRST_CONN_PARAMS_UPDATE_DELAY       5000
 #define NEXT_CONN_PARAMS_UPDATE_DELAY        5000
 #define MAX_CONN_PARAMS_UPDATE_DELAY         15000
 
-// I/O Definitions
+' I/O Definitions
 #define I2C_DATA_READY                       25
 
 #define DIGITAL_IN                           1
@@ -124,22 +150,22 @@
 
 #define DVK_BUTTON0                          16
 #define DVK_BUTTON1                          17
-#define DVK_LED0	                     18
+#define DVK_LED0	                         18
 #define DVK_LED1                             19
 
 
-//******************************************************************************
-// Library Import
-//******************************************************************************
+'******************************************************************************
+' Library Import
+'******************************************************************************
 #include "lib\vsp.csc.sblib"
 
 
-//******************************************************************************
-// Equivalent to main() in C
-//******************************************************************************
+'******************************************************************************
+' Equivalent to main() in C
+'******************************************************************************
 
-//------------------------------------------------------------------------------
-// Wait for a synchronous event.
-// An application can have multiple <WaitEvent> statements
-//------------------------------------------------------------------------------
+'------------------------------------------------------------------------------
+' Wait for a synchronous event.
+' An application can have multiple <WaitEvent> statements
+'------------------------------------------------------------------------------
 WaitEvent

@@ -1,42 +1,45 @@
-//  @brief
-//      vSP Bridge Mode, Battery Service and CSC Service.
-//      Battery level is always 50 %.
-//
-//  @file
-//      vsp.csc.slib
-//  @author
-//      Peter Schmid, peter@spyr.ch
-//  @date
-//      2014-05-14
-//  @remark
-//      Language: smartBASIC 1.8.88.0, LAIRD BL600 Module
-//   	  Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
-//  @copyright
-//      Peter Schmid, Switzerland
-//
-//      This file is part of "Velo Bling-Bling" BLE application software.
-//
-//      "Velo Bling-Bling" software is free software: you can redistribute it
-//      and/or modify it under the terms of the GNU General Public License as
-//      published by the Free Software Foundation, either version 3 of the
-//      License, or (at your option) any later version.
-//
-//      "Velo Bling-Bling" is distributed in the hope that it will be useful,
-//      but WITHOUT ANY WARRANTY; without even the implied warranty of
-//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//      GNU General Public License for more details.
-//
-//      You should have received a copy of the GNU General Public License along
-//      with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
-////////////////////////////////////////////////////////////////////////////////
+'******************************************************************************
+'   @brief
+'       vSP Bridge Mode, Battery Service and CSC Service.
+'
+'       Battery level is always 50 %.
+'
+'   @file
+'       vsp.csc.slib
+'   @author
+'       Peter Schmid, peter@spyr.ch
+'   @date
+'       2014-05-14
+'   @remark
+'       Language: smartBASIC 1.8.88.0, LAIRD BL600/BL652 Module
+'       Example :: BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
+'   @copyright
+'       Peter Schmid, Switzerland
+'
+'       This file is part of "Velo Bling-Bling" BLE application software.
+'
+'       "Velo Bling-Bling" software is free software: you can redistribute it
+'       and/or modify it under the terms of the GNU General Public License as
+'       published by the Free Software Foundation, either version 3 of the
+'       License, or (at your option) any later version.
+'
+'       "Velo Bling-Bling" is distributed in the hope that it will be useful,
+'       but WITHOUT ANY WARRANTY; without even the implied warranty of
+'       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+'       GNU General Public License for more details.
+'
+'       You should have received a copy of the GNU General Public License along
+'       with "Velo Bling-Bling". If not, see <http:'www.gnu.org/licenses/>.
+'
+'******************************************************************************
 
-//******************************************************************************
-// Definitions
-//******************************************************************************
+'******************************************************************************
+' Definitions
+'******************************************************************************
 
-//******************************************************************************
-// Register Error Handler as early as possible
-//******************************************************************************
+'******************************************************************************
+' Register Error Handler as early as possible
+'******************************************************************************
 sub HandlerOnErr()
   if (ENABLE_DEBUG_PRINTS!=0) then
     print "\n OnErr - ";GetLastError();"\n"
@@ -45,9 +48,9 @@ endsub
 onerror next HandlerOnErr
 
 
-//******************************************************************************
-// Library Import
-//******************************************************************************
+'******************************************************************************
+' Library Import
+'******************************************************************************
 #include "lib\debugging.routines.sblib"
 #include "lib\ble.sblib"
 #include "lib\standard.advert.mngr.sblib"
@@ -57,44 +60,45 @@ onerror next HandlerOnErr
 #include "lib\gap.service.sblib"
 #include "lib\device.information.service.sblib"
 #include "lib\custom.battery.service.sblib"
+'#include "lib\battery.service.sblib"
 #include "lib\cycling.service.sblib"
 #include "lib\i2c.sblib"
 
-//******************************************************************************
-// Debugging resource after libs
-//******************************************************************************
+'******************************************************************************
+' Debugging resource after libs
+'******************************************************************************
 
-//******************************************************************************
-// Global Variable Declarations
-//******************************************************************************
+'******************************************************************************
+' Global Variable Declarations
+'******************************************************************************
 
-dim stRsp$ as string        // Uart rx data is stored here
+dim stRsp$ as string        ' Uart rx data is stored here
 dim ok$,er$
 dim msg$
-dim mnltk                   // min size of ltk
-dim mxltk                   // max size of ltk
-dim advFlags                // value for flags AD
-dim adTag                   // AD Tag
-dim adDta$                  // AD Data
+dim mnltk                   ' min size of ltk
+dim mxltk                   ' max size of ltk
+dim advFlags                ' value for flags AD
+dim adTag                   ' AD Tag
+dim adDta$                  ' AD Data
 
-dim tsz                     // txbuf size for vsp
-dim rsz                     // rxbuf size for vsp
-dim flgs                    // flags for vsp
-dim uuhdl                   // Service uuid handle for VSP
-dim rx$                     // vsp read data stored here
-dim rxb                     // vsp read block size
+dim tsz                     ' txbuf size for vsp
+dim rsz                     ' rxbuf size for vsp
+dim flgs                    ' flags for vsp
+dim uuhdl                   ' Service uuid handle for VSP
+dim rx$                     ' vsp read data stored here
+dim rxb                     ' vsp read block size
 
 
-//******************************************************************************
-// Initialisse Global Variable
-//******************************************************************************
+'******************************************************************************
+' Initialisse Global Variable
+'******************************************************************************
 
 ok$      = "\nOK\r\n>"
 er$      = "\nERROR\r\n>"
 
 mnltk    = MIN_LTK_SIZE
 mxltk    = MAX_LTK_SIZE
-advFlags = DISCOVERY_MODE    // can be changed via 'fg' command
+advFlags = DISCOVERY_MODE    ' can be changed via 'fg' command
 
 adTag    = 0
 adDta$   = ""
@@ -106,8 +110,8 @@ uuhdl    = 0
 
 rxb      = 60
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 sub DbgInfo(id as integer)
   select id
   case 0
@@ -121,13 +125,13 @@ endsub
 
 
 
-//******************************************************************************
-// Function and Subroutine definitions
-//******************************************************************************
+'******************************************************************************
+' Function and Subroutine definitions
+'******************************************************************************
 
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 sub UartRsp(rsp as integer)
   dim rc
   if rsp == 0 then
@@ -137,26 +141,16 @@ sub UartRsp(rsp as integer)
   endif
 endsub
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 sub UartMsg(byref msg$ as string)
   dim rc
   rc = UartWrite(msg$)
 endsub
 
-//==============================================================================
-//==============================================================================
-function StartAds(adv as integer) as integer
-  dim rc
-  rc=StartAdverts(adv)
-  if rc==0 then
-    DbgMsgVal("Start Adverts",adv)
-  endif
-endfunc rc
 
-
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 sub ShowConnParms(nCtx as integer)
   dim rc
   dim intrvl,sprvto,slat
@@ -171,8 +165,8 @@ endsub
 
 
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 function VSpAdvert()
   dim rc,rpt$
   rc = BleAdvRptAddUuid128(scRpt$, uuhdl)
@@ -187,51 +181,51 @@ function VSpAdvert()
   endif
 endfunc rc
 
-//==============================================================================
-// This is called to start things off just before the waitevent at the end of
-// the file
-//==============================================================================
+'==============================================================================
+' This is called to start things off just before the waitevent at the end of
+' the file
+'==============================================================================
 sub OnStartup()
   dim rc
 
+//  rc = BleSecMngrLescPairingPref(0)  ' legacy pairing (BLE 4.0)
   InitSecurityMngr(PAIRING_IOCAPABILITY, MIN_LTK_SIZE, MAX_LTK_SIZE)
 
-  // Initialise services
+  ' Initialise services
   InitGapService()
   InitDisService()
 
-  // Initialise Battery Service
+  ' Initialise Battery Service
   InitBatService(50, 0)
 
-  // Initialise CSC Service
+  ' Initialise CSC Service
   InitCscService()
 
-  // Initiliase advert and scan reports
+  ' Initiliase advert and scan reports
   InitAdvReports(advFlags)
 
-  // Initialise VSP service
+  ' Initialise VSP service
   rc = BleVSpOpen(tsz, rsz, flgs, uuhdl)
   AssertResCode(rc, 7982)
 
-  // add the VSP service to the scan report
-  rc = VSpAdvert()
-  AssertResCode(rc,7981)
-  rc = StartAds(ADV_IND)
-
-
+  ' add the VSP service to the scan report
+//  rc = VSpAdvert()
+//  AssertResCode(rc,7981)
+    
+  
 endsub
 
 
-//******************************************************************************
-// Handler definitions
-//******************************************************************************
+'******************************************************************************
+' Handler definitions
+'******************************************************************************
 
-//==============================================================================
-// This handler is called when there is a BLE message
-//==============================================================================
+'==============================================================================
+' This handler is called when there is a BLE message
+'==============================================================================
 function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as integer
 
-  // Inform libraries
+  ' Inform libraries
   ConnMngrOnBleMsg(nMsgId,nCtx)
   AdvMngrOnBleMsg(nMsgId,nCtx)
 
@@ -239,19 +233,19 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
   case BLE_EVBLEMSGID_CONNECT
     DbgMsgVal(" --- Connect : ",nCtx)
     ShowConnParms(nCtx)
-    // GpioWrite(16, 0)
+    ' GpioWrite(16, 0)
     GpioWrite(DVK_LED0, 1)
-    // BLE state info over port
-    //GpioWrite(I2C_DATA_READY, 0)
+    ' BLE state info over port
+    'GpioWrite(I2C_DATA_READY, 0)
     state = 1
 
 
   case BLE_EVBLEMSGID_DISCONNECT
     DbgMsgVal(" --- Disconnect : ",nCtx)
-    // GpioWrite(16, 1)
+    ' GpioWrite(16, 1)
     GpioWrite(DVK_LED0, 0)
-    // BLE state info over port
-    //GpioWrite(I2C_DATA_READY, 1)
+    ' BLE state info over port
+    'GpioWrite(I2C_DATA_READY, 1)
     state = 0
 
   case BLE_EVBLEMSGID_IMMEDIATE_ALERT_SERVICE_ALERT
@@ -287,76 +281,89 @@ function HandlerBleMsg(BYVAL nMsgId AS INTEGER, BYVAL nCtx AS INTEGER) as intege
   endselect
 endfunc 1
 
-//==============================================================================
-// This handler is called when data has arrived at the virtual serial port
-// or if the vsp tx buffer is empty
-//==============================================================================
+'==============================================================================
+' This handler is called when there is a CHARCCCD message
+'==============================================================================
+function HandlerCharCccd(BYVAL hChar AS INTEGER, BYVAL nVal AS INTEGER) as integer
+  if hChar == chCscMeas then
+    DbgMsgVal(" --- Csc Notification : ", nVal)
+  else
+    DbgMsgVal(" --- New CCCD : ", nVal)
+  endif
+endfunc 1
+
+
+'==============================================================================
+' This handler is called when data has arrived at the virtual serial port
+' or if the vsp tx buffer is empty
+'==============================================================================
 function HandlerLoop()
   BleVspUartBridge()
 endfunc 1
 
-//==============================================================================
-// This handler is called when data has arrived at the serial port
-//==============================================================================
+'==============================================================================
+' This handler is called when data has arrived at the serial port
+'==============================================================================
 function HandlerBlrAdvTimOut() as integer
 
   if AdvMngrOnAdvTimeOut() == 0 then
 
     DbgMsg( "\nAdvert stopped via timeout" )
-    //DbgMsg( "\n   - could use SystemStateSet(0) to switch off" )
+    'DbgMsg( "\n   - could use SystemStateSet(0) to switch off" )
 
-    //------------------------------------------------------------
-    //  Switch off the system - requires a power cycle to recover
-    //------------------------------------------------------------
-    //  rc = SystemStateSet(0)
-    //  AssertResCode(rc,1199)
+    '------------------------------------------------------------
+    '  Switch off the system - requires a power cycle to recover
+    '------------------------------------------------------------
+    '  rc = SystemStateSet(0)
+    '  AssertResCode(rc,1199)
   endif
 
 endfunc 1
 
-//******************************************************************************
-// Equivalent to main() in C
-//******************************************************************************
+'******************************************************************************
+' Equivalent to main() in C
+'******************************************************************************
 
-//------------------------------------------------------------------------------
-// Enable synchronous event handlers
-//------------------------------------------------------------------------------
+'------------------------------------------------------------------------------
+' Enable synchronous event handlers
+'------------------------------------------------------------------------------
 
 OnEvent  EVBLE_ADV_TIMEOUT  call HandlerBlrAdvTimOut
+OnEvent  EVCHARCCCD         call HandlerCharCccd
 
-// EVBLEMSG indicate when signifficant BLE event occurs.
-// Function HandlerBleMsg is called to interparate Message ID and context
+' EVBLEMSG indicate when signifficant BLE event occurs.
+' Function HandlerBleMsg is called to interparate Message ID and context
 OnEvent  EVBLEMSG           call HandlerBleMsg
 
-// all events have the same handler
-// EVVSPRX is thrown when VSP is open and data has arrived
+' all events have the same handler
+' EVVSPRX is thrown when VSP is open and data has arrived
 OnEvent  EVVSPRX            call HandlerLoop
-// EVUARTRX  = data has arrived at the UART interface
+' EVUARTRX  = data has arrived at the UART interface
 OnEvent  EVUARTRX           call HandlerLoop
 OnEvent  EVVSPTXEMPTY       call HandlerLoop
 OnEvent  EVUARTTXEMPTY      call HandlerLoop
 
-//------------------------------------------------------------------------------
-// Initialise Services and then wait for events
-//------------------------------------------------------------------------------
-if (AUTO_STARTUP & 1) != 0 then
-  //Create Advert packets and register services
-  OnStartup()
-endif
-if (AUTO_STARTUP & 2) != 0 then
-  //Start advertising
-  dim rc
-  rc=StartAds(ADV_IND)
-endif
+'------------------------------------------------------------------------------
+' Initialise Services and then wait for events
+'------------------------------------------------------------------------------
 
-// sets I2C_DATA_READY (sio25) as a digital in
+dim rc
+
+'Create Advert packets and register services
+OnStartup()
+
+'Start advertising
+rc=StartAdverts(ADV_IND)
+AssertResCode(rc, 1001)
+
+' sets I2C_DATA_READY (sio25) as a digital in
 rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_IN, 1)
-// sets I2C_DATA_READY (sio25) as a digital out
-//rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)
+' sets I2C_DATA_READY (sio25) as a digital out
+'rc = GpioSetFunc(I2C_DATA_READY, DIGITAL_OUT, 1)
 AssertResCode(res, 1000)
 
 
-// Send user prompt for uart based command interface
+' Send user prompt for uart based command interface
 msg$="\n\r"
 UartMsg(msg$)
 msg$=DEVICENAME
@@ -364,5 +371,5 @@ UartMsg(msg$)
 msg$="\n\r"
 UartMsg(msg$)
 
-// Send an OK response
+' Send an OK response
 UartRsp(0)

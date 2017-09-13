@@ -1,154 +1,156 @@
-//  @brief
-//      Create Cycling Speed and Cadence Service
-//
-//  @file
-//      cycling.service.slib
-//  @author
-//      Peter Schmid, peter@spyr.ch
-//  @date
-//      2015-06-16
-//  @remark
-//      Language: smartBASIC 1.8.88.0, LAIRD BL600 Module
-//   	  Example : custom.heart.rate.service.slib
-//  @copyright
-//      Peter Schmid, Switzerland
-//
-//      This file is part of "Velo Bling-Bling" BLE application software.
-//
-//      "Velo Bling-Bling" software is free software: you can redistribute it
-//      and/or modify it under the terms of the GNU General Public License as
-//      published by the Free Software Foundation, either version 3 of the
-//      License, or (at your option) any later version.
-//
-//      "Velo Bling-Bling" is distributed in the hope that it will be useful,
-//      but WITHOUT ANY WARRANTY; without even the implied warranty of
-//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//      GNU General Public License for more details.
-//
-//      You should have received a copy of the GNU General Public License along
-//      with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
-////////////////////////////////////////////////////////////////////////////////
+'******************************************************************************
+'   @brief
+'       Create Cycling Speed and Cadence Service
+'
+'   @file
+'       cycling.service.slib
+'   @author
+'       Peter Schmid, peter@spyr.ch
+'   @date
+'       2015-06-16
+'   @remark
+'       Language: smartBASIC 1.8.88.0, LAIRD BL600/BL652 Module
+'       Example : custom.heart.rate.service.slib
+'   @copyright
+'       Peter Schmid, Switzerland
+'
+'       This file is part of "Velo Bling-Bling" BLE application software.
+'
+'       "Velo Bling-Bling" software is free software: you can redistribute it
+'       and/or modify it under the terms of the GNU General Public License as
+'       published by the Free Software Foundation, either version 3 of the
+'       License, or (at your option) any later version.
+'
+'       "Velo Bling-Bling" is distributed in the hope that it will be useful,
+'       but WITHOUT ANY WARRANTY; without even the implied warranty of
+'       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+'       GNU General Public License for more details.
+'
+'       You should have received a copy of the GNU General Public License along
+'       with "Velo Bling-Bling". If not, see <http://www.gnu.org/licenses/>.
+'
+'******************************************************************************
 
 
-//******************************************************************************
-// Definitions
-//******************************************************************************
+'******************************************************************************
+' Definitions
+'******************************************************************************
 
-#define MAX_CSC_LEN  20     // max length data value
+#define MAX_CSC_LEN  20     ' max length data value
 
-//******************************************************************************
-// Library Import
-//******************************************************************************
+'******************************************************************************
+' Library Import
+'******************************************************************************
 
-//******************************************************************************
-// Global Variable Declarations
-//******************************************************************************
+'******************************************************************************
+' Global Variable Declarations
+'******************************************************************************
 
-dim shCsc as integer        // Service handle
-dim chCscMeas as integer    // Cycling Speed and Cadence Meas. Char. Handle
-dim chCscLoc as integer     // Cycling Speed and Cadence Sensor Location Handle
-dim chCscFeat as integer    // Cycling Speed and Cadence Feature Handle
+dim shCsc as integer        ' Service handle
+dim chCscMeas as integer    ' Cycling Speed and Cadence Meas. Char. Handle
+dim chCscLoc as integer     ' Cycling Speed and Cadence Sensor Location Handle
+dim chCscFeat as integer    ' Cycling Speed and Cadence Feature Handle
 
-dim wheelRevo               // cumulative wheel revolutions (unitless)
-dim wheelTime               // last wheel event time (1/1024 s)
-dim sensLoc                 // wheel sensor location
-dim sensCntct               // wheel sensor contact status on/off
-dim feature                 // feature
-dim csc$ as string          // csc measurement attribute
+dim wheelRevo               ' cumulative wheel revolutions (unitless)
+dim wheelTime               ' last wheel event time (1/1024 s)
+dim sensLoc                 ' wheel sensor location
+dim sensCntct               ' wheel sensor contact status on/off
+dim feature                 ' feature
+dim csc$ as string          ' csc measurement attribute
 
-//******************************************************************************
-// Initialise Global Variable
-//******************************************************************************
+'******************************************************************************
+' Initialise Global Variable
+'******************************************************************************
 
 wheelRevo       = 0
 wheelTime       = 0
-sensLoc         = 4         // frontwheel
+sensLoc         = 4         ' frontwheel
 sensCntct       = 1
 
-//******************************************************************************
-// Function and Subroutine definitions
-//******************************************************************************
+'******************************************************************************
+' Function and Subroutine definitions
+'******************************************************************************
 
-//******************************************************************************
-// Register Error Handler as early as possible
-//******************************************************************************
+'******************************************************************************
+' Register Error Handler as early as possible
+'******************************************************************************
 
 
-//==============================================================================
-// data to encode is in wheelRevo, wheelTime, sensCntct
-//==============================================================================
+'==============================================================================
+' data to encode is in wheelRevo, wheelTime, sensCntct
+'==============================================================================
 sub CscEncode()
   dim rc
   dim cscFlags
 
-  // Initialise the flags byte (only wheel revolution data present)
+  ' Initialise the flags byte (only wheel revolution data present)
   cscFlags = 1
 
-  // create the attribute buffer space
-  // 1 byte flags, 4 bytes wheel revolution, 2 bytes wheel time
+  ' create the attribute buffer space
+  ' 1 byte flags, 4 bytes wheel revolution, 2 bytes wheel time
   rc = StrFill(csc$, 0, 7)
-  // Save the flags field
+  ' Save the flags field
   rc = BleEncode8(csc$, cscFlags, 0)
   AssertResCode(rc, 6000)
-  // Save the wheel revolution field
+  ' Save the wheel revolution field
   rc = BleEncode32(csc$, wheelRevo, 1)
   AssertResCode(rc, 6010)
-  // save the wheel time
+  ' save the wheel time
   rc = BleEncode16(csc$, wheelTime, 5)
   AssertResCode(rc, 6020)
 
 endsub
 
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 function AddCharCscMeas() as integer
   dim rc
 
-  //----------------------------------------------------------------------------
-  // Create the Cycling Speed and Cadence Measurement Characteristic which has a
-  // UUID of 0x2A5B
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create the Cycling Speed and Cadence Measurement Characteristic which has a
+  ' UUID of 0x2A5B
+  '----------------------------------------------------------------------------
   dim mdAttr
   dim mdCccd
   dim mdSccd
   dim chProp
 
-  //++++
-  //Create the metadata for the value attribute in the characteristic
-  // Cycling Speed and Cadence Measure attribute has variable length
-  //++++
+  '++++
+  'Create the metadata for the value attribute in the characteristic
+  ' Cycling Speed and Cadence Measure attribute has variable length
+  '++++
   mdAttr = BleAttrMetadata(BLE_ATTR_ACCESS_NONE, BLE_ATTR_ACCESS_NONE, MAX_CSC_LEN, 1, rc)
   AssertResCode(rc, 9200)
-  //There is a CCCD in this characteristic
+  'There is a CCCD in this characteristic
   mdCccd=BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_OPEN, 2, 0, rc)
   AssertResCode(rc, 9202)
-  //There is no SCCD in this characteristic
+  'There is no SCCD in this characteristic
   mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9204)
-  //Create the Characteristic object
+  'AssertResCode(rc, 9204)
+  'Create the Characteristic object
   chProp = BLE_CHAR_PROPERTIES_NOTIFY
   rc = BleCharNew(chProp, BleHandleUuid16(0x2A5B), mdAttr, mdCccd, mdSccd)
   AssertResCode(rc, 9206)
 
-  //++++
-  //Commit the characteristic
-  //++++
+  '++++
+  'Commit the characteristic
+  '++++
   CscEncode()
   rc = BleCharCommit(shCsc, csc$, chCscMeas)
   AssertResCode(rc, 9208)
 
 endfunc rc
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 function AddCharCscFeature() as integer
   dim rc
 
-  //----------------------------------------------------------------------------
-  // Create the Cycling Speed and Cadence Feature Charact. which has a
-  // UUID of 0x2A5C
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create the Cycling Speed and Cadence Feature Charact. which has a
+  ' UUID of 0x2A5C
+  '----------------------------------------------------------------------------
   dim mdAttr
   dim mdCccd
   dim mdSccd
@@ -157,23 +159,23 @@ function AddCharCscFeature() as integer
 
   mdAttr = BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 2, 0, rc)
   AssertResCode(rc, 9210)
-  //There is no CCCD in this characteristic
+  'There is no CCCD in this characteristic
   mdCccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9212)
-  //There is no SCCD in this characteristic
+  'AssertResCode(rc, 9212)
+  'There is no SCCD in this characteristic
   mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9214)
-  //Create the Characteristic object
+  'AssertResCode(rc, 9214)
+  'Create the Characteristic object
   chProp = BLE_CHAR_PROPERTIES_READ
   rc = BleCharNew(chProp, BleHandleUuid16(0x2A5C), mdAttr, mdCccd, mdSccd)
   AssertResCode(rc, 9216)
 
-  //++++
-  //Commit the characteristic
-  //++++
+  '++++
+  'Commit the characteristic
+  '++++
   attr$ ="\01\00"
   feature = 1
-  // only Wheel Revolution Data Supported
+  ' only Wheel Revolution Data Supported
   rc = BleEncode16(attr$, feature, 0)
   AssertResCode(rc, 9217)
   rc = BleCharCommit(shCsc, attr$, chCscFeat)
@@ -182,15 +184,15 @@ function AddCharCscFeature() as integer
 endfunc rc
 
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 function AddCharCscSensLoc() as integer
   dim rc
 
-  //----------------------------------------------------------------------------
-  // Create the  Cycling Speed and Cadence Sensor Location Charact. which has a
-  // UUID of 0x2A5D
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create the  Cycling Speed and Cadence Sensor Location Charact. which has a
+  ' UUID of 0x2A5D
+  '----------------------------------------------------------------------------
   dim mdAttr
   dim mdCccd
   dim mdSccd
@@ -199,20 +201,20 @@ function AddCharCscSensLoc() as integer
 
   mdAttr = BleAttrMetadata(BLE_ATTR_ACCESS_OPEN, BLE_ATTR_ACCESS_NONE, 1, 0, rc)
   AssertResCode(rc, 9220)
-  //There is no CCCD in this characteristic
+  'There is no CCCD in this characteristic
   mdCccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9222)
-  //There is no SCCD in this characteristic
+  'AssertResCode(rc, 9222)
+  'There is no SCCD in this characteristic
   mdSccd = BLE_CHAR_METADATA_ATTR_NOT_PRESENT
-  //AssertResCode(rc, 9224)
-  //Create the Characteristic object
+  'AssertResCode(rc, 9224)
+  'Create the Characteristic object
   chProp = BLE_CHAR_PROPERTIES_READ
   rc = BleCharNew(chProp, BleHandleUuid16(0x2A5D), mdAttr, mdCccd, mdSccd)
   AssertResCode(rc, 9226)
 
-  //++++
-  //Commit the characteristic
-  //++++
+  '++++
+  'Commit the characteristic
+  '++++
   attr$ ="\00"
   rc = BleEncode8(attr$, sensLoc, 0)
   rc = BleCharCommit(shCsc, attr$, chCscLoc)
@@ -221,69 +223,69 @@ function AddCharCscSensLoc() as integer
 endfunc rc
 
 
-//==============================================================================
-//==============================================================================
+'==============================================================================
+'==============================================================================
 function RegCscService() as integer
   dim rc
 
-  //----------------------------------------------------------------------------
-  // Create a Cycling Speed and Cadence PRIMARY service attribure which has a
-  // uuid of 0x1816
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create a Cycling Speed and Cadence PRIMARY service attribure which has a
+  ' uuid of 0x1816
+  '----------------------------------------------------------------------------
   rc = BleSvcCommit(BLE_SERVICE_PRIMARY, BleHandleUuid16(0x1816), shCsc)
   AssertResCode(rc, 9100)
 
-  //----------------------------------------------------------------------------
-  // Create the Cycling Speed and Cadence Measurement Characteristic which has a
-  // UUID of 0x2A5B
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create the Cycling Speed and Cadence Measurement Characteristic which has a
+  ' UUID of 0x2A5B
+  '----------------------------------------------------------------------------
   rc = AddCharCscMeas()
   AssertResCode(rc, 9110)
 
-  //----------------------------------------------------------------------------
-  // Create the Cycling Speed and Cadence Feature Characteristic which has a
-  // UUID of  0x2A5C
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create the Cycling Speed and Cadence Feature Characteristic which has a
+  ' UUID of  0x2A5C
+  '----------------------------------------------------------------------------
   rc = AddCharCscFeature()
   AssertResCode(rc, 9120)
 
-  //----------------------------------------------------------------------------
-  // Create the Cycling Speed and Cadence Sensor Location Charact. which has a
-  // UUID of 0x2A5D
-  //----------------------------------------------------------------------------
+  '----------------------------------------------------------------------------
+  ' Create the Cycling Speed and Cadence Sensor Location Charact. which has a
+  ' UUID of 0x2A5D
+  '----------------------------------------------------------------------------
   rc = AddCharCscSensLoc()
   AssertResCode(rc, 9130)
 
-  //----------------------------------------------------------------------------
-  // Create the Cycling Speed and Cadence SC Control Point. which has a
-  // UUID of  0x2A55
-  //----------------------------------------------------------------------------
-  //rc = AddCharCscScControlPoint()
-  //AssertResCode(rc, 9140)
+  '----------------------------------------------------------------------------
+  ' Create the Cycling Speed and Cadence SC Control Point. which has a
+  ' UUID of  0x2A55
+  '----------------------------------------------------------------------------
+  'rc = AddCharCscScControlPoint()
+  'AssertResCode(rc, 9140)
 
 endfunc rc
 
 
-//==============================================================================
-// snsloc is an integer as follows:-
-//   0 	  Other
-//   1 	  Top of shoe
-//   2 	  In shoe
-//   3 	  Hip
-//   4 	  Front Wheel
-//   5 	  Left Crank
-//   6 	  Right Crank
-//   7 	  Left Pedal
-//   8 	  Right Pedal
-//   9 	  Front Hub
-//   10   Rear Dropout
-//   11   Chainstay
-//   12   Rear Wheel
-//   13   Rear Hub
-//   14   Chest
-//   15 - 255 	Reserved for future use
+'==============================================================================
+' snsloc is an integer as follows:-
+'   0 	  Other
+'   1 	  Top of shoe
+'   2 	  In shoe
+'   3 	  Hip
+'   4 	  Front Wheel
+'   5 	  Left Crank
+'   6 	  Right Crank
+'   7 	  Left Pedal
+'   8 	  Right Pedal
+'   9 	  Front Hub
+'   10   Rear Dropout
+'   11   Chainstay
+'   12   Rear Wheel
+'   13   Rear Hub
+'   14   Chest
+'   15 - 255 	Reserved for future use
 
-//==============================================================================
+'==============================================================================
 sub InitCscService()
   dim rc
 
@@ -295,9 +297,9 @@ sub InitCscService()
 
 endsub
 
-//==============================================================================
-// will return 0 if successfully sent
-//==============================================================================
+'==============================================================================
+' will return 0 if successfully sent
+'==============================================================================
 function SendCscData() as integer
   dim rc
 
@@ -307,11 +309,11 @@ function SendCscData() as integer
 endfunc rc
 
 
-//******************************************************************************
-// Handler definitions
-//******************************************************************************
+'******************************************************************************
+' Handler definitions
+'******************************************************************************
 
 
-//******************************************************************************
-// Other initialisations
-//******************************************************************************
+'******************************************************************************
+' Other initialisations
+'******************************************************************************
