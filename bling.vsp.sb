@@ -32,7 +32,7 @@
 '       Example : BleVSpUartBridge.sb (See in BL600CodeSnippets.zip)
 '                upass.vsp.sb
 '   @version
-'       2.4
+'       2.5
 '   @copyright
 '       Peter Schmid, Switzerland
 '
@@ -68,7 +68,7 @@
 #define MANF_NAME                            "spyr"
 #define MODELSTR                             "Velo Bling-Bling"
 #define SERIALNUM                            "12345"
-#define HWREV                                "1.4"
+#define HWREV                                "2.3"
 #define SWREV                                "2.5"
 
 '#define SYSID                                ""
